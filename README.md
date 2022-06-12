@@ -1,2 +1,2 @@
-# Personal_Projects
+# Playground
 A collection of personal projets, trainings, etc.

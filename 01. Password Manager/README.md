@@ -8,7 +8,7 @@ IMPORTANT!!!
 The data encryption in this version is reduced to nothing since I don't want to share the actual encryption techniques publicly.
 
 Instructions:
-Open the 01. Password Manager folder (In VSCode for ex.) and run the main.py file
+Run from the main directory -> main.py file
 
 Screenshots:
 

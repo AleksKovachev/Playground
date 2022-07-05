@@ -525,12 +525,10 @@ while not end_of_game:
         if hint.upper() == "Y":
             remaining_chars = set(string.ascii_uppercase).difference(set(guessed_letters).union({l.upper() for l in chosen_word}))
             count = 0
-            print(f"You have {int(len(remaining_chars) / 4)} letter/s added to the guessed letters list!")
+            print(f"You have {len(remaining_chars) // 4} letter/s added to the guessed letters list!")
 
-            for _ in range(int(len(remaining_chars) / 4)):
-                while True:
-                    if count == int(len(remaining_chars) / 4):
-                        break
+            for _ in range(len(remaining_chars) // 4):
+                while count != len(remaining_chars) // 4:
                     add_letter = random.choice(list(remaining_chars))
                     if add_letter not in chosen_word.upper():
                         guessed_letters.append(add_letter)

@@ -6,3 +6,26 @@ It supports 2 languages (Bulgarian and English) by default but more can easily b
 
 IMPORTANT!!!
 The data encryption in this version is reduced to nothing since I don't want to share the actual encryption techniques publicly.
+
+Instructions:
+Open the 01. Password Manager folder (In VSCode for ex.) and run the main.py file
+
+Screenshots:
+
+01. Login window:
+![image](https://user-images.githubusercontent.com/75262108/177400705-b4dfe038-626e-42a4-b2dd-42009cc0343b.png)
+
+02. Sign-up window:
+![image](https://user-images.githubusercontent.com/75262108/177400972-bf531ffc-f529-4191-9163-0674ebf373f6.png)
+
+03. Main window with Options expanded:
+![image](https://user-images.githubusercontent.com/75262108/177401801-5575259c-1eef-4bdc-89e2-ac4e15d54b82.png)
+
+04. Theme Editor:
+![image](https://user-images.githubusercontent.com/75262108/177402001-6678496c-b394-411f-af98-a69579089aa2.png)
+
+05. Settings Menu:
+![image](https://user-images.githubusercontent.com/75262108/177402121-5935e6b2-4167-4d19-b2c7-d3b71e865d68.png)
+
+06. Main window and Main Menu:
+![image](https://user-images.githubusercontent.com/75262108/177402267-a4b8b2c5-6fd9-4357-b278-f153ae119423.png)

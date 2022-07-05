@@ -4,6 +4,7 @@ A collection of personal projets, trainings, etc.
 
 Used Python version: 3.10
 
+CAUTION! Please check out the individual README files in the directories for screenshots!
 
 ## 1.Password Manager
 

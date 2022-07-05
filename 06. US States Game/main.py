@@ -1,7 +1,7 @@
 import turtle, pandas
 
 screen = turtle.Screen()
-screen.title("Ü.S. States Game")
+screen.title("U.S. States Game")
 IMAGE = ("blank_states_img.gif")
 screen.addshape(IMAGE)
 turtle.shape(IMAGE)

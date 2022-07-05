@@ -471,7 +471,7 @@ print(f"Your {word_length} letter word is:\n")
 print("".join(display) + "\n")
 
 #Testing code
-print(f'Pssst, the solution is {chosen_word}.')
+# print(f'Pssst, the solution is {chosen_word}.')
 
 while not end_of_game:
 

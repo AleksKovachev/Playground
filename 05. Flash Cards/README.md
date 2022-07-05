@@ -3,6 +3,7 @@
 This is a small Flash Cards application which aims at helping you learn new languages.
 
 Instructions:
+
 Run from the main.py file from the main directory
 
 Screenshots:

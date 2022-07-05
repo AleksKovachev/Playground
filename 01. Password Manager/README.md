@@ -21,6 +21,7 @@ Screenshots:
 ![image](https://user-images.githubusercontent.com/75262108/177400972-bf531ffc-f529-4191-9163-0674ebf373f6.png)
 
 03. Main window with Options expanded:
+
 ![image](https://user-images.githubusercontent.com/75262108/177401801-5575259c-1eef-4bdc-89e2-ac4e15d54b82.png)
 
 04. Theme Editor:
@@ -32,4 +33,5 @@ Screenshots:
 ![image](https://user-images.githubusercontent.com/75262108/177402121-5935e6b2-4167-4d19-b2c7-d3b71e865d68.png)
 
 06. Main window and Main Menu:
+
 ![image](https://user-images.githubusercontent.com/75262108/177402267-a4b8b2c5-6fd9-4357-b278-f153ae119423.png)

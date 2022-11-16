@@ -1,7 +1,5 @@
 """The main UI module for Password Manager"""
 
-#+ pylint: disable=import-error
-
 from tkinter import (Tk, Toplevel, Canvas, Frame, Menu, Label, Button, Radiobutton, Checkbutton, Entry, Spinbox, Listbox,
                     LabelFrame, PhotoImage, IntVar, StringVar, SINGLE)
 from tkinter.colorchooser import askcolor
@@ -9,7 +7,7 @@ from tkinter.ttk import Combobox, Style, Sizegrip
 from datetime import datetime
 from os import scandir, getenv
 from os.path import dirname, join, splitext, exists
-import updates as ups
+from . import updates as ups
 
 
 # ---------------------------- CONSTANTS --------------------------------------------- #
@@ -39,7 +37,7 @@ class PMUI:
         self.root.protocol('WM_DELETE_WINDOW', lambda: ups.auto_backup(self.root, True))
         self.root.minsize(app_width, app_height)
         self.root.config(bg=ups.data.bgc)
-        self.root.iconbitmap(r'icons\icon.ico')
+        self.root.iconbitmap(r'data_files\icons\icon.ico')
         # Define a variable for the radio buttons in the Options menu. Also for the autoclose minutes
         # Defined here because in main.py this executes too early and gives error
         self.autoclose_mins = IntVar(value=ups.data.cd_mins)
@@ -55,36 +53,36 @@ class PMUI:
         """Draws the UI for the Main window"""
         # Canvas
         self.canvas = Canvas(bg=ups.data.bgc, height=200, width=200, highlightthickness=0)
-        self.logo = PhotoImage(master=self.root, file=r'icons\logo.png')
+        self.logo = PhotoImage(master=self.root, file=r'data_files\icons\logo.png')
         self.canvas.create_image(100, 100, image=self.logo)
         self.canvas.place(relx=0.5, y=25, anchor='n')
 
         # Define the following icons
-        self.eye_icon = PhotoImage(file=r'icons\eye.png')
-        self.no_eye_icon = PhotoImage(file=r'icons\no_eye.png')
-        self.eye_icon_h = PhotoImage(file=r'icons\eye_hover.png')
-        self.no_eye_icon_h = PhotoImage(file=r'icons\no_eye_hover.png')
-        self.browse_icon = PhotoImage(file=r'icons\browse.png')
-        self.import_icon = PhotoImage(file=r'icons\import.png')
-        self.export_icon = PhotoImage(file=r'icons\export.png')
-        self.backup_icon = PhotoImage(file=r'icons\backup.png')
-        self.logout_icon = PhotoImage(file=r'icons\logout.png')
-        self.exit_icon = PhotoImage(file=r'icons\exit.png')
-        self.copy_icon = PhotoImage(file=r'icons\copy.png')
-        self.paste_icon = PhotoImage(file=r'icons\paste.png')
-        self.cut_icon = PhotoImage(file=r'icons\cut.png')
-        self.themes_icon = PhotoImage(file=r'icons\themes.png')
-        self.light_icon = PhotoImage(file=r'icons\light.png')
-        self.prefs_icon = PhotoImage(file=r'icons\prefs.png')
-        self.dark_icon = PhotoImage(file=r'icons\dark.png')
-        self.backup_period_icon = PhotoImage(file=r'icons\backup_period.png')
-        self.settings_icon = PhotoImage(file=r'icons\settings.png')
+        self.eye_icon = PhotoImage(file=r'data_files\icons\eye.png')
+        self.no_eye_icon = PhotoImage(file=r'data_files\icons\no_eye.png')
+        self.eye_icon_h = PhotoImage(file=r'data_files\icons\eye_hover.png')
+        self.no_eye_icon_h = PhotoImage(file=r'data_files\icons\no_eye_hover.png')
+        self.browse_icon = PhotoImage(file=r'data_files\icons\browse.png')
+        self.import_icon = PhotoImage(file=r'data_files\icons\import.png')
+        self.export_icon = PhotoImage(file=r'data_files\icons\export.png')
+        self.backup_icon = PhotoImage(file=r'data_files\icons\backup.png')
+        self.logout_icon = PhotoImage(file=r'data_files\icons\logout.png')
+        self.exit_icon = PhotoImage(file=r'data_files\icons\exit.png')
+        self.copy_icon = PhotoImage(file=r'data_files\icons\copy.png')
+        self.paste_icon = PhotoImage(file=r'data_files\icons\paste.png')
+        self.cut_icon = PhotoImage(file=r'data_files\icons\cut.png')
+        self.themes_icon = PhotoImage(file=r'data_files\icons\themes.png')
+        self.light_icon = PhotoImage(file=r'data_files\icons\light.png')
+        self.prefs_icon = PhotoImage(file=r'data_files\icons\prefs.png')
+        self.dark_icon = PhotoImage(file=r'data_files\icons\dark.png')
+        self.backup_period_icon = PhotoImage(file=r'data_files\icons\backup_period.png')
+        self.settings_icon = PhotoImage(file=r'data_files\icons\settings.png')
 
         # Create an image object for every language in the lang folder
         self.flags = {}
-        for lng in scandir('lang'):
+        for lng in scandir(r'data_files\lang'):
             if lng.name.endswith('.py'):
-                self.flags[''.join(splitext(lng.name)[:-1])] = PhotoImage(file=f"icons\\{''.join(splitext(lng.name)[:-1])}.png")
+                self.flags[''.join(splitext(lng.name)[:-1])] = PhotoImage(file=f"data_files\\icons\\{''.join(splitext(lng.name)[:-1])}.png")
 
         # Main Menu Bar
         self.menubar = Menu()
@@ -914,11 +912,3 @@ def update_mins():
 
 
 ui = PMUI()
-
-
-if __name__ == '__main__':
-    win = Tk()
-    test = CustSettings(win)
-    win.withdraw()
-
-    win.mainloop()

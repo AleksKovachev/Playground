@@ -2,7 +2,7 @@
 
 from random import choice
 from string import ascii_letters
-from dry_data import coding_words, RANDOM_WORDS
+from .dry_data import coding_words, RANDOM_WORDS
 
 
 class WordGenError(Exception):

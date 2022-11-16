@@ -1,8 +1,10 @@
 """This module is responsible for the data security"""
 
 import json
+
 from os import path, getenv
 from cryptography.fernet import Fernet
+
 
 ############################################################################
 
@@ -25,8 +27,6 @@ def cipher(data: dict):
 
     # Generates a key
     fernet_key = Fernet.generate_key()
-
-    r"C:\Users\vulka\AppData\Local\PM Master"
 
     with open(path.join(DATA_PATH, "pm.key"), "wb") as key_file:
         key_file.write(fernet_key)

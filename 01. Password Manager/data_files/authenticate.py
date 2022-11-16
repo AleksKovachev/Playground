@@ -1,18 +1,16 @@
 """The Authentication window for Password Manager"""
 
-#+ pylint: disable=import-error
-
 from tkinter import Tk, Toplevel, Label, Button, Entry, Canvas, PhotoImage, messagebox, Frame, END
 from string import ascii_letters, punctuation, digits
 from datetime import datetime
-from math import floor
 from os import scandir
 from os.path import dirname, join, splitext
 from importlib import import_module
 from shutil import copyfile
 import json
-import updates as ups
-from ui import ui, update_backup_period
+import data_files
+from . import updates as ups
+from .ui import ui, update_backup_period
 
 
 # Notes:
@@ -54,26 +52,26 @@ class Authenticate:
         self.auth.protocol('WM_DELETE_WINDOW', self.window.quit)
         self.auth.resizable(False, False)
         self.auth.config(bg=MED_GRAY)
-        self.auth.iconbitmap(r'icons\icon.ico')
+        self.auth.iconbitmap(r'data_files\icons\icon.ico')
         self.auth.grab_set()
         # Make it always on top of other applications. Only valid for login window
         self.auth.attributes('-topmost', True)
         self.auth.focus_force()
 
         # Define the following icons
-        self.logo2 = PhotoImage(master=self.auth, file=r'icons\logo.png')
-        self.user_icon = PhotoImage(master=self.auth, file=r'icons\user.png')
-        self.pass_icon = PhotoImage(master=self.auth, file=r'icons\password.png')
-        self.eye_icon = PhotoImage(file=r'icons\eye.png')
-        self.no_eye_icon = PhotoImage(file=r'icons\no_eye.png')
-        self.eye_icon_h = PhotoImage(file=r'icons\eye_hover.png')
-        self.no_eye_icon_h = PhotoImage(file=r'icons\no_eye_hover.png')
+        self.logo2 = PhotoImage(master=self.auth, file=r'data_files\icons\logo.png')
+        self.user_icon = PhotoImage(master=self.auth, file=r'data_files\icons\user.png')
+        self.pass_icon = PhotoImage(master=self.auth, file=r'data_files\icons\password.png')
+        self.eye_icon = PhotoImage(file=r'data_files\icons\eye.png')
+        self.no_eye_icon = PhotoImage(file=r'data_files\icons\no_eye.png')
+        self.eye_icon_h = PhotoImage(file=r'data_files\icons\eye_hover.png')
+        self.no_eye_icon_h = PhotoImage(file=r'data_files\icons\no_eye_hover.png')
 
         # Create an image object for every language in the lang folder
         self.flags = {}
-        for lng in scandir('lang'):
+        for lng in scandir(r'data_files\lang'):
             if lng.name.endswith('.py'):
-                self.flags[''.join(splitext(lng.name)[:-1])] = PhotoImage(file=f"icons\\{''.join(splitext(lng.name)[:-1])}.png")
+                self.flags[''.join(splitext(lng.name)[:-1])] = PhotoImage(file=f"data_files\\icons\\{''.join(splitext(lng.name)[:-1])}.png")
 
         # Create a Canvas and put a image on it
         auth_canvas = Canvas(master=self.auth, height=200, width=200, bg=MED_GRAY, highlightthickness=0)
@@ -225,7 +223,7 @@ class Authenticate:
                     if data_integrity_check() == 1:
                         manage_data_integrity(self.window, self.auth)
                     else:
-                        start_program(self.window, self.auth)
+                        self.start_program(self.window, self.auth)
                 else:
                     # Hide the authentication window to focus on the error then show it back
                     self.auth.withdraw()
@@ -241,45 +239,45 @@ class Authenticate:
                                 f"{self.log_entry_user.get()} {ups.data.auth['check_login']['showerror2']['message'][1]}")
         return
 
+    @staticmethod
+    def start_program(root: Tk, auth: Toplevel):
+        """Remove the authentication window and start the program
 
-def start_program(root: Tk, auth: Toplevel):
-    """Remove the authentication window and start the program
-
-    Args:
-        root (Tk): The main window
-        auth (Toplevel): The authentication window
-    """
-    # Update the theme with the user chosen preferences
-    ui.update_theme(ups.data.user)
-    # Update the UI with the chosen language
-    ups.data.lang = import_module(f"lang.{ups.data.jdata[ups.data.user]['pm_settings']['language']}")
-    ups.data.update_lang_shortcuts()
-    lng = ups.data.jdata[ups.data.user]['pm_settings']['language']
-    ui.lang_btn.config(text=lng.capitalize(), image=ui.flags[lng.lower()])
-    ui.update_language()
-    # Check the user defined backup period and update UI with checkmark
-    update_backup_period(ups.data.jdata[ups.data.user]['pm_settings']['backup']['period'], ups.data.user)
-    ui.radio_var.set(ups.data.jdata[ups.data.user]['pm_settings']['backup']['period'])
-    # Save the user preferences for default username and email
-    ups.data.default_user = ups.data.jdata[ups.data.user]['pm_settings']['defaults']['user']
-    ups.data.default_email = ups.data.jdata[ups.data.user]['pm_settings']['defaults']['email']
-    # Write the default username and email to the UI entry boxes
-    ui.emails.set(ups.data.default_email)
-    ui.user_entry.delete(0, END)
-    ui.user_entry.insert(0, ups.data.default_user)
-    # Update the Status bar
-    msg = ups.data.auth['check_login']['status_entries_num']
-    ui.status_entries_num.set(f"{msg[0]} {ups.data.user}! {msg[1]} {len(ups.data.jdata[ups.data.user]['entries'])} " \
-        f"{msg[2]} {ups.data.jdata[ups.data.user]['pm_settings']['backup']['date']}")
-    ui.cd_var.set(f"{ups.data.auth['check_login']['autoclose']} {ups.data.timer_st}")
-    # Run the auto-close countdown with the user-prefered setting
-    ups.data.cd_mins = ups.data.jdata[ups.data.user]['pm_settings']['autoclose_mins']
-    ups.data.countdown = ups.data.cd_mins * 60
-    ui.autoclose_mins.set(ups.data.cd_mins)
-    countdown()
-    # Reveal the main program window and destroy the authentication window
-    root.deiconify()
-    auth.destroy()
+        Args:
+            root (Tk): The main window
+            auth (Toplevel): The authentication window
+        """
+        # Update the theme with the user chosen preferences
+        ui.update_theme(ups.data.user)
+        # Update the UI with the chosen language
+        ups.data.lang = import_module(f"data_files.lang.{ups.data.jdata[ups.data.user]['pm_settings']['language']}")
+        ups.data.update_lang_shortcuts()
+        lng = ups.data.jdata[ups.data.user]['pm_settings']['language']
+        ui.lang_btn.config(text=lng.capitalize(), image=ui.flags[lng.lower()])
+        ui.update_language()
+        # Check the user defined backup period and update UI with checkmark
+        update_backup_period(ups.data.jdata[ups.data.user]['pm_settings']['backup']['period'], ups.data.user)
+        ui.radio_var.set(ups.data.jdata[ups.data.user]['pm_settings']['backup']['period'])
+        # Save the user preferences for default username and email
+        ups.data.default_user = ups.data.jdata[ups.data.user]['pm_settings']['defaults']['user']
+        ups.data.default_email = ups.data.jdata[ups.data.user]['pm_settings']['defaults']['email']
+        # Write the default username and email to the UI entry boxes
+        ui.emails.set(ups.data.default_email)
+        ui.user_entry.delete(0, END)
+        ui.user_entry.insert(0, ups.data.default_user)
+        # Update the Status bar
+        msg = ups.data.auth['check_login']['status_entries_num']
+        ui.status_entries_num.set(f"{msg[0]} {ups.data.user}! {msg[1]} {len(ups.data.jdata[ups.data.user]['entries'])} " \
+            f"{msg[2]} {ups.data.jdata[ups.data.user]['pm_settings']['backup']['date']}")
+        ui.cd_var.set(f"{ups.data.auth['check_login']['autoclose']} {ups.data.timer_st}")
+        # Run the auto-close countdown with the user-prefered setting
+        ups.data.cd_mins = ups.data.jdata[ups.data.user]['pm_settings']['autoclose_mins']
+        ups.data.countdown = ups.data.cd_mins * 60
+        ui.autoclose_mins.set(ups.data.cd_mins)
+        data_files.countdown()
+        # Reveal the main program window and destroy the authentication window
+        root.deiconify()
+        auth.destroy()
 
 
 def data_integrity_check():
@@ -375,20 +373,18 @@ def check_pwd(event: str, password: str) -> bool | None:
         if event != "static":
             event.widget['fg'] = "red"
             return None
-        else:
-            messagebox.showerror(title=ups.data.auth['check_pwd']['showerror1']['title'], message=ups.data.auth['check_pwd']['showerror1']['message'])
-            return False
-    elif event != 'static':
+        messagebox.showerror(title=ups.data.auth['check_pwd']['showerror1']['title'], message=ups.data.auth['check_pwd']['showerror1']['message'])
+        return False
+    if event != 'static':
         event.widget['fg'] = "black"
 
     if len(password) < 4 or password == "Password":
         if event != "static":
             event.widget['fg'] = "red"
             return None
-        else:
-            messagebox.showerror(title=ups.data.auth['check_pwd']['showerror2']['title'], message=ups.data.auth['check_pwd']['showerror2']['message'])
-            return False
-    elif event != 'static':
+        messagebox.showerror(title=ups.data.auth['check_pwd']['showerror2']['title'], message=ups.data.auth['check_pwd']['showerror2']['message'])
+        return False
+    if event != 'static':
         event.widget['fg'] = "black"
 
     for char in password:
@@ -396,11 +392,10 @@ def check_pwd(event: str, password: str) -> bool | None:
             if event != "static":
                 event.widget['fg'] = "red"
                 return None
-            else:
-                messagebox.showerror(title=ups.data.auth['check_pwd']['showerror3']['title'],
-                                    message=ups.data.auth['check_pwd']['showerror3']['message'])
-                return False
-        elif event != 'static':
+            messagebox.showerror(title=ups.data.auth['check_pwd']['showerror3']['title'],
+                                message=ups.data.auth['check_pwd']['showerror3']['message'])
+            return False
+        if event != 'static':
             event.widget['fg'] = "black"
     return True
 
@@ -420,13 +415,13 @@ def check_pwd_rep(event: str, password: str, repeat: str) -> bool | None:
         if event != "static":
             event.widget['fg'] = "red"
             return None
-        else:
-            messagebox.showerror(title=ups.data.lang.authenticate['check_pwd_rep']['title'],
-                                message=ups.data.lang.authenticate['check_pwd_rep']['message'])
+        messagebox.showerror(title=ups.data.lang.authenticate['check_pwd_rep']['title'],
+                            message=ups.data.lang.authenticate['check_pwd_rep']['message'])
         return False
-    elif event != "static":
+    if event != "static":
         event.widget['fg'] = "black"
         return None
+    return None
 
 
 class SignUp:
@@ -447,20 +442,21 @@ class SignUp:
         self.reg.protocol('WM_DELETE_WINDOW', lambda: (self.reg.destroy(), self.root.deiconify()))
         self.reg.resizable(False, False)
         self.reg.config(bg=MED_GRAY)
-        self.reg.iconbitmap(r'icons\icon.ico')
+        self.reg.iconbitmap(r'data_files\icons\icon.ico')
         self.reg.grab_set()
         # Make the signup window always on top
         self.reg.attributes('-topmost', True)
         self.reg.focus_force()
+
         # Define the following icons
-        self.logo2 = PhotoImage(master=self.reg, file=r'icons\logo.png')
-        self.user_icon = PhotoImage(master=self.reg, file=r'icons\user.png')
-        self.pass_icon = PhotoImage(master=self.reg, file=r'icons\password.png')
-        self.email_icon = PhotoImage(master=self.reg, file=r'icons\email.png')
-        self.eye_icon = PhotoImage(file=r'icons\eye.png')
-        self.no_eye_icon = PhotoImage(file=r'icons\no_eye.png')
-        self.eye_icon_h = PhotoImage(file=r'icons\eye_hover.png')
-        self.no_eye_icon_h = PhotoImage(file=r'icons\no_eye_hover.png')
+        self.logo2 = PhotoImage(master=self.reg, file=r'data_files\icons\logo.png')
+        self.user_icon = PhotoImage(master=self.reg, file=r'data_files\icons\user.png')
+        self.pass_icon = PhotoImage(master=self.reg, file=r'data_files\icons\password.png')
+        self.email_icon = PhotoImage(master=self.reg, file=r'data_files\icons\email.png')
+        self.eye_icon = PhotoImage(file=r'data_files\icons\eye.png')
+        self.no_eye_icon = PhotoImage(file=r'data_files\icons\no_eye.png')
+        self.eye_icon_h = PhotoImage(file=r'data_files\icons\eye_hover.png')
+        self.no_eye_icon_h = PhotoImage(file=r'data_files\icons\no_eye_hover.png')
 
         # Create a Canvas and put a image on it
         reg_canvas = Canvas(master=self.reg, height=200, width=200, bg=MED_GRAY, highlightthickness=0)
@@ -745,57 +741,3 @@ def show_pass(password: Entry, eye_button: Button, eye_hover: PhotoImage, no_eye
         elif eye_button['image'] == str(eye_hover):
             eye_button['image'] = no_eye_hover
         password["show"] = "✲" if password["show"] == "" else ""
-
-
-def logout():
-    """Logout of the main application and bring up the Authentication window"""
-    ui.root.after_cancel(ups.data.timer)
-    ups.data.countdown = ups.data.cd_mins * 60
-    # Check the auto-backup options and save a data backup if needed
-    ups.auto_backup(ui.root, False)
-    # Destroy all TopLevel windows and hide the main application window
-    for widget in ui.root.winfo_children():
-        if isinstance(widget, Toplevel):
-            widget.destroy()
-    ui.root.withdraw()
-    # Build a new Authentication window
-    Authenticate(ui.root)
-
-
-def countdown():
-    "Countdown for automatic logout"
-    if ups.data.cd_mins == 0:
-        # Set the time for the label in the status bar
-        ui.cd_var.set(ups.data.auth['check_login']['autoclose_deactivated'])
-        # Rerun this function every 1 second
-        ups.data.timer = ui.root.after(1000, countdown)
-    else:
-        # Get the remaining mninutes and seconds
-        count_min = floor(ups.data.countdown / 60)
-        count_sec = ups.data.countdown % 60
-
-        # Format the seconds with '0' infront of single digits
-        if count_sec < 10:
-            count_sec = f"0{count_sec}"
-        # Write the time to a variable
-        ups.data.timer_st = f"{count_min}:{count_sec}"
-        # Set the time for the label in the status bar
-        ui.cd_var.set(f"{ups.data.auth['check_login']['autoclose']} {ups.data.timer_st}")
-
-        # Subtract 1 second of the remaining time
-        ups.data.countdown -= 1
-        # Rerun this function every 1 second
-        ups.data.timer = ui.root.after(1000, countdown)
-        # If timer reaches 0 - stop the timer and logout the user
-        if ups.data.countdown <= 0:
-            ui.root.after_cancel(ups.data.timer)
-            logout()
-
-
-if __name__ == '__main__':
-    win = Tk()
-    win.eval('tk::PlaceWindow . center')
-    # manage_data_integrity(win)
-    win.withdraw()
-
-    win.mainloop()

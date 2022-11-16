@@ -1,6 +1,6 @@
 """Additional functions for Password Manager"""
 
-#+ pylint: disable=import-error, unused-argument
+#+ pylint: disable=unused-argument
 
 import json
 from os.path import exists, dirname, join
@@ -12,8 +12,8 @@ from string import ascii_letters, punctuation, digits
 from importlib import import_module
 from datetime import datetime
 from re import search
-from dry_data import settings as ddsettings
-from data_handling import cipher, decipher
+from .dry_data import settings as ddsettings
+from .data_handling import cipher, decipher
 
 
 FONT_A = ("CorsicaMX-Regular", 18, "normal")
@@ -58,7 +58,7 @@ class Data:
                 json.dump(ddsettings, sett, indent=4)
         with open(join(self.data_path, 'settings.json'), encoding='utf-8') as sett:
             self.main_settings = json.load(sett)
-        self.lang = import_module(f"lang.{self.main_settings['language']}")
+        self.lang = import_module(f"data_files.lang.{self.main_settings['language']}")
 
         self.update_lang_shortcuts()
 
@@ -121,6 +121,7 @@ class Data:
         """
         # Write exit code 1 in case of forced quit during encryption and saving file
         refresh_exit_code(1)
+
         cipher(save_data or self.jdata)
         # Write exit code 0 after data has been successfully saved to disk
         refresh_exit_code(0)
@@ -137,7 +138,7 @@ class Data:
         Args:
             lng (str): The desired language corresponding to a language.py file in the lang folder.
         """
-        self.lang = import_module(f'lang.{lng.lower()}')
+        self.lang = import_module(f'data_files.lang.{lng.lower()}')
 
 
     def reset_timer(self, event):
@@ -229,7 +230,7 @@ def new_data_func(imported_file: str, close: Toplevel = None):
         close (Toplevel, optional): A window to close. Defaults to None.
     """
     if not imported_file:
-        return
+        return None
     # Create an "Imported" folder in the data files if it doesn't already exist
     if not exists(join(data.backups_path, "Imported")):
         mkdir(join(data.backups_path, "Imported"))
@@ -247,6 +248,7 @@ def new_data_func(imported_file: str, close: Toplevel = None):
         refresh_exit_code(0)
         close.destroy()
         return True
+    return None
 
 
 def merge_data_func(tl_root: Toplevel, imported_file: str):

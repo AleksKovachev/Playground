@@ -12,6 +12,10 @@ Instructions:
 
 Run from the main directory -> main.py file
 
+Prerequisites:
+
+Install cryptography package. pip install cryptography
+
 Screenshots:
 
 01. Login window:

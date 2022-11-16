@@ -1,0 +1,106 @@
+{
+    "username": {
+        "login_data": {
+            "email": "email@email.com",
+            "password": "password"
+        },
+        "pm_settings": {
+            "theme": {
+                "DETAILS2": "#DDDDDD",
+                "ACCENT": "#555555",
+                "BG": "#777777",
+                "FG": "black",
+                "DETAILS1": "white"
+            },
+            "backup": {
+                "period": 1,
+                "date": "May 16, 2022 - 12.24.30"
+            },
+            "defaults": {
+                "user": "username",
+                "email": "email@email.com"
+            },
+            "language": "english",
+            "autoclose_mins": 5
+        },
+        "entries": {
+            "Test": {
+                "user": "username",
+                "email": "myemail@email.com",
+                "password": "TEST"
+            },
+            "Twitter": {
+                "user": "username",
+                "email": "example.email@email.com",
+                "password": "Na1VE&GoVERnm3Nt"
+            },
+            "yahoo": {
+                "user": "username2",
+                "email": "email@email.com",
+                "password": "w1de+UN!T"
+            },
+            "spider": {
+                "user": "username",
+                "email": "email@email.com",
+                "password": "sp12easd"
+            },
+            "Example": {
+                "user": "username",
+                "email": "email2@email.com",
+                "password": "469`l+{5"
+            },
+            "mylocker.com": {
+                "user": "username",
+                "email": "email3@email.com",
+                "password": "Dy$fuNCtiONa1^r35PON$Ib!117y"
+            },
+            "Test1": {
+                "user": "user756",
+                "email": "random@email.com",
+                "password": "23r^R.37"
+            },
+            "testing": {
+                "user": "username",
+                "email": "email@email.com",
+                "password": "@4=0Xlu0"
+            }
+        }
+    },
+    "user345": {
+        "login_data": {
+            "email": "user.email@email.com",
+            "password": "password"
+        },
+        "pm_settings": {
+            "theme": {
+                "DETAILS2": "#DDDDDD",
+                "ACCENT": "#555555",
+                "BG": "#777777",
+                "FG": "black",
+                "DETAILS1": "white"
+            },
+            "backup": {
+                "period": 2,
+                "date": "Jun 14, 2022 - 10.42.21"
+            },
+            "defaults": {
+                "user": "user345",
+                "email": "my.email@email.com"
+            },
+            "language": "english",
+            "autoclose_mins": 5
+        },
+        "entries": {
+            "Test": {
+                "user": "username",
+                "email": "myemail@email.com",
+                "password": "TEST1"
+            },
+            "Test2": {
+                "user": "user345",
+                "email": "example.email@email.com",
+                "password": "TEST2"
+            }
+        }
+    }
+}

@@ -1,6 +1,15 @@
 """A container module for all dry data"""
 
 
+#######################################################
+
+# IMPORTANT!!!
+# The data in this file version is reduced since some
+# of it is related to the encryption techniques.
+
+#######################################################
+
+
 # Exit code legend:
 #   code 0: The program quit succesfully
 #   code 1: The program quit unexpectedly or is currently running and logged in
@@ -39,6 +48,7 @@ coding_words = {
     "y": ["y", "Y"],
     "z": ["z", "Z"]
 }
+
 
 RANDOM_WORDS = {
     "adjectives": (

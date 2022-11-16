@@ -1,25 +1,26 @@
 """A Simple Password Generator App"""
-#+ pylint: disable=import-error
 
 from tkinter import Toplevel, Label, Listbox, Scrollbar, Y, LEFT, RIGHT, END, BOTH
 from tkinter.messagebox import askyesno, showinfo, showerror, showwarning
 from string import ascii_letters, punctuation, digits
 from random import randint, choice, shuffle
 from math import floor
-from authenticate import Authenticate, logout
-import updates as ups
-from ui import ui, ThemeChanger, update_backup_period
-from word_generator import gen_adj_noun
+from data_files import logout
+import data_files.updates as ups
+from data_files.authenticate import Authenticate
+from data_files.word_generator import gen_adj_noun
+from data_files.ui import ui, ThemeChanger, update_backup_period
 
 
 ############################################################################################
 
-
 # TODO Add 3-5 attempts for password login. Then store the next possible time a new attempt can be made.
-# TODO When X number of wrong attempts were made - LOCK the user altogether and send an email with instructions
-# TODO and UNLOCK code which will also reset the password. Instruct the user to change it INSTANTLY!
+#      When X number of wrong attempts were made - LOCK the user altogether and send an email with instructions
+#      and UNLOCK code which will also reset the password. Instruct the user to change it INSTANTLY!
 # TODO Add option for forgotten password
-
+# TODO Minimize button of Sign-up window and Account list (Browse) window not working
+# TODO Split data inito multiple files for every user. 
+# TODO Store accounts backup on a server
 
 ############################################################################################
 
@@ -30,16 +31,16 @@ Authenticate(ui.root)
 # ---------------------------- CONSTANTS --------------------------------------------- #
 
 
-FONT_A = ("CorsicaMX-Regular", 18, "normal")
-FONT_B = ("CorsicaMX-Book", 14, "normal")
-FONT_C = ("CorsicaMX-Book", 12, "normal")
-FONT_F = ("CorsicaMX-Book", 10, "normal")
+FONT_A: tuple = ("CorsicaMX-Regular", 18, "normal")
+FONT_B: tuple = ("CorsicaMX-Book", 14, "normal")
+FONT_C: tuple = ("CorsicaMX-Book", 12, "normal")
+FONT_F: tuple = ("CorsicaMX-Book", 10, "normal")
 
 
 # ---------------------------- SEARCH ------------------------------------------- #
 
 
-def check_data(data: dict):
+def check_data(data: dict) -> list | None:
     """Checks the data for existing platforms
 
     Args:
@@ -49,7 +50,7 @@ def check_data(data: dict):
         list | None: List of all matching results. None if exact match (not case-sensitive).
     """
     # Get the message parts in the chosen language
-    cdat = ups.data.lang.main['check_data']
+    cdat: str = ups.data.lang.main['check_data']
 
     # Define a list of keys that are similar to the one in search
     similar_keys = []
@@ -78,16 +79,16 @@ def search_creds(*args):
         as with tkinter binding which is why "*args" is used instead of "event"
     """
     # Get the message parts in the chosen language
-    scred = ups.data.lang.main['search_creds']
+    scred: str = ups.data.lang.main['search_creds']
     # Get the user search
-    web = ui.website_entry.get()
+    web: str = ui.website_entry.get()
 
     # Display an error if a search was initiated but the field is empty
-    if (len(args) != 1 or args[0] != "Browse") and web == "":
+    if (len(args) != 1 or args[0] != "Browse") and not web:
         showerror(title=scred['showerror']['title'], message=scred['showerror']['message'])
         return
 
-    data = ups.data.jdata[ups.data.user]['entries'].copy()
+    data: dict = ups.data.jdata[ups.data.user]['entries'].copy()
 
     # If the Browse button was clicked display all platforms
     if len(args) == 1 and args[0] == "Browse":
@@ -95,7 +96,7 @@ def search_creds(*args):
         return
 
     # Collect all keys similar to the one in search
-    similar_keys = check_data(data)
+    similar_keys: list | None = check_data(data)
 
     if similar_keys is None:
         return
@@ -105,11 +106,11 @@ def search_creds(*args):
         showinfo(title=f"{scred['showinfo']['title']} {similar_keys[0]}", message=f"{scred['showinfo']['message'][0]} " \
             f"{data[similar_keys[0]]['user']}\n{scred['showinfo']['message'][1]} {data[similar_keys[0]]['email']}\n" \
                     f"{scred['showinfo']['message'][2]} {data[similar_keys[0]]['password']}")
-        key = similar_keys[0]
+        key: str = similar_keys[0]
         auto_fill(key, data[key]['user'], data[key]['email'], data[key]['password'])
     # Display a window with all similar keys if multiple were found
     elif len(similar_keys) > 1:
-        approved_accounts = {acc:creds for acc, creds in data.items() if acc in similar_keys}
+        approved_accounts: dict = {acc:creds for acc, creds in data.items() if acc in similar_keys}
         win2(approved_accounts, web, 200)
     # Display a dialog to browse the data if no similar keys were found
     elif askyesno(title=scred['askyesno']['title'], message=scred['askyesno']['message']):
@@ -171,7 +172,7 @@ def win2(data: dict, entry: str, custom_height: int = 450):
     results.resizable(False, True)
     results.minsize(0, 200)
     results.config(padx=50, pady=20, bg=ups.data.bgc)
-    results.iconbitmap(r'icons\icon.ico')
+    results.iconbitmap(r'data_files\icons\icon.ico')
     results.grab_set()
 
     # Label

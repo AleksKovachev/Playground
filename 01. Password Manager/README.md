@@ -41,3 +41,8 @@ Screenshots:
 06. Main window and Main Menu:
 
 ![image](https://user-images.githubusercontent.com/75262108/177402267-a4b8b2c5-6fd9-4357-b278-f153ae119423.png)
+
+07. Backup period Menu (Taken in Windows 11 which is why it looks a bit different):
+
+![image](https://user-images.githubusercontent.com/75262108/205445537-f472d003-0f00-4410-812d-ef0f1407bdd0.png)
+

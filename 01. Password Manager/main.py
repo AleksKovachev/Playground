@@ -19,7 +19,7 @@ from data_files.ui import ui, ThemeChanger, update_backup_period
 #      and UNLOCK code which will also reset the password. Instruct the user to change it INSTANTLY!
 # TODO Add option for forgotten password
 # TODO Minimize button of Sign-up window and Account list (Browse) window not working
-# TODO Split data inito multiple files for every user. 
+# TODO Split data inito multiple files for every user.
 # TODO Store accounts backup on a server
 
 ############################################################################################
@@ -336,10 +336,8 @@ def gen_pass():
         case "2":
             # Generate the phrase +/- a few characters
             password = gen_adj_noun(maxlen=total_chars - 5, minlen=total_chars - 7, delimiter=delimiter)
-            add_pass = []
             # Add random characters at the end for security until total_chars count is reached
-            for _ in range(total_chars - len(password) - 1):
-                add_pass.append(choice((choice(ascii_letters), choice(digits), choice(punctuation))))
+            add_pass = [choice((choice(ascii_letters), choice(digits), choice(punctuation))) for _ in range(total_chars - len(password) - 1)]
             shuffle(add_pass)
             # The final password is the generated phrase with random delimiter + the same delimiter + shuffled random characters
             password += delimiter + ''.join(add_pass)
@@ -351,10 +349,8 @@ def gen_pass():
         case "4":
             # Generate a "coded" version of a phrase
             password = gen_adj_noun(maxlen=total_chars - 5, minlen=total_chars - 7, delimiter=delimiter, coded=True)
-            add_pass = []
             # Add random characters at the end for security until total_chars count is reached
-            for _ in range(total_chars - len(password)):
-                add_pass.append(choice((choice(ascii_letters), choice(digits), choice(punctuation))))
+            add_pass = [choice((choice(ascii_letters), choice(digits), choice(punctuation))) for _ in range(total_chars - len(password))]
             shuffle(add_pass)
             # The final password is the generated phrase with random delimiter + shuffled random characters
             password += ''.join(add_pass)

@@ -494,7 +494,7 @@ def check_email(event: str, email: str, widget=None) -> bool | None:    # source
         bool | None: bool for static check, else None
     """
     # Define custom acceptable email pattern
-    patt = "^(?P<NAME>(?P<FIRST_CHAR>\w)(\w{1,63})(?P<LAST_CHAR>\w))@(?P<DOMAIN>\w{2,30})\\.(?P<TOPLEVEL>[a-z]{2,5})$"  # pylint: disable=anomalous-backslash-in-string
+    patt = "^(?P<NAME>(?P<FIRST_CHAR>\w)([\w.!#$%^&*-+='`{|}~/]{1,63})(?P<LAST_CHAR>\w))@(?P<DOMAIN>\w{2,30})\\.(?P<TOPLEVEL>[a-z]{2,5})$"  # pylint: disable=anomalous-backslash-in-string
     acc_pattern = search(patt, email)
 
     # Check if first or last charactes is a special one

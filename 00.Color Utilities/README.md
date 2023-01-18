@@ -271,6 +271,7 @@ An alternative calculation method for converting H, S, L values to R, G, B. Need
 ### Better comments extension settings:
 Paste these in VSCode's settings.json file andter installing the extension and restart so the changes can take effect.
 
+```
 "better-comments.tags": [
     {
     "tag": "!",
@@ -345,3 +346,4 @@ Paste these in VSCode's settings.json file andter installing the extension and r
     "italic": false
     }
 ]
+```

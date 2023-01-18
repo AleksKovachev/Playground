@@ -6,6 +6,13 @@ Used Python version: 3.10
 
 CAUTION! Please check out the individual README files in the directories for screenshots!
 
+## 0.Color Utilities
+
+This is a package I put up for working with colors. It's sole purpose is to be as simple to use as possible which
+is why I took the procedural approach with it. Everything inside is over-commented and every function has a detailed
+docstring. The package is still in development! There are things that are not yet tested or documented. If you spot
+any issues, please don't hesitate to contact me.
+
 ## 1.Password Manager
 
 This password manager application was based on the one from lesson #29 and #30 of the Udemy course "100 days of code".

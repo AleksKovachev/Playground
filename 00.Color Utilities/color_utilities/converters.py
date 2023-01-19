@@ -7,6 +7,82 @@ from . import color_utils as cu
 from . import xyz
 
 
+def rgb_to_web_safe(*color, output: str = "round"):
+    """### Converts an R, G, B color to its web safe version
+
+    ### Args:
+        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
+        *     hex returns a hex string color in the form of decade
+        *     hexp returns a hex string color in the form of #facade
+        *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
+        *     round returns a tuple(R, G, B) where the values are integers in range 0-255
+        *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
+        *     In any invalid case the "direct" approach will be used
+
+    ### Returns:
+        
+    """
+    # Check color integrity
+    R, G, B = ih.check_color(color, normalized=True)
+    # Convert to web safe
+    R, G, B = (round(i * 5) * 51 for i in (R, G, B))
+
+    return ih.return_rgb((R, G, B), output=output)
+
+
+def convert_to_linear(RGB: tuple | list, color_space: str, normalized: bool = False) -> tuple:
+    """### Takes R, G, B values and converts them to Linear R, G, B values based on their color space
+
+    ### Args:
+        `RGB` (tuple | list): The R, G, B values to be converted
+        `color_space` (str): The color space that the R, G, B values are in
+        `normalized` (bool, optional): Returns the output in range 0-1 instead of 0-100
+
+    ### Returns:
+        tuple[R, G, B]
+    """
+    if color_space == "SRGB":
+        R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in RGB)
+        print(R, G, B)
+    elif color_space == "PROPHOTO":
+        R, G, B = (i ** 1.8 if i > 16 * (1/512) else i / 16 for i in RGB)
+    elif color_space == "REC 2020":
+        R, G, B = (i / 4.5 if abs(i) < xyz.BETA * 4.5 else ((abs(i) + xyz.ALPHA - 1) / xyz.ALPHA) ** 1 / 0.45 for i in RGB)
+    elif xyz.color_space_props[color_space]["gamma"] == "L*":
+        R, G, B = (((i + 0.16) / 1.16) ** 3 if i < 0.08 else (100 * i) / xyz.CIE_K for i in RGB)
+    else:
+        R, G, B = (i **  xyz.color_space_props[color_space]["gamma"] if i > 0 else 0 for i in RGB)
+
+    return (R, G, B) if normalized else (R * 100, G * 100, B * 100)
+
+
+def convert_linear_to(RGB, color_space) -> tuple:
+    """### Takes linear R, G, B values and applies gamma to them based on the desired color space
+
+    ### Args:
+        `RGB` (tuple | list): The R, G, B values to be converted
+        `color_space` (str): The color space that the R, G, B will be converted to
+
+    ### Returns:
+        tuple[R, G, B]
+    """
+    # Apply gamma
+    if color_space == "SRGB":
+        R, G, B = (1.055 * (i ** (1 / 2.4)) - 0.055 if i > 0.0031308 else i * 12.92 for i in RGB)
+    elif color_space == "PROPHOTO":
+        R, G, B = (i ** (1/1.8) if i > (1/512) else 16 * i for i in RGB)
+    elif color_space == "REC 2020":
+        R, G, B = (4.5 * i if i < xyz.BETA else xyz.ALPHA * i ** 0.45 - (xyz.ALPHA - 1) for i in RGB)
+    elif xyz.color_space_props[color_space]["gamma"] == "L*":
+        R, G, B = (1.16 * i ** (1/3) if i > xyz.CIE_E else (i * xyz.CIE_K) / 100 for i in RGB)
+    else:
+        R, G, B = (i **  (1 / xyz.color_space_props[color_space]["gamma"]) if i > 0 else 0 for i in RGB)
+
+    return R, G, B
+
+
 def hex_to_rgb(color: str, *, depth: int | float = 8, normalized: bool = False) -> list:
     """### Converts a hex color to RGB values
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
@@ -126,7 +202,7 @@ def rgb_to_hls(*color: int | float | str | tuple | list, depth: int = 8, output:
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float| str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
 
@@ -553,12 +629,171 @@ def hsi_to_rgb(*HSI, depth: int = 8, output: str = "round"):
     return ih.return_rgb((R, G, B), normalized_input=True, depth=depth, output=output)
 
 
+def rgb_to_hsp(*color, depth: int = 8, apply_gamma=True, output="round"):
+    """### Takes an sRGB color and returns its HSP (Hue, Saturation, Perceived brightness) representation.
+    #### This is not an actual color representation! The Hue and Saturation are being calculated the same  \
+            way as in HSV. The perceived brightness is being calculated using the Weighted Euclidean Norm of the R, G, B
+
+    #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
+        If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
+
+    ### Args:
+        `color` (int | float | str | tuple | list): String "add1c7", "#effec7", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
+        `apply_gamma` (bool): Linearizes the input R, G, B color before calculating the values. Defaults to True.
+        `output` (str, optional): Either "normalized", "half-normalized", "round" or "direct"
+        *     normalized returns a tuple(H, S, P) where the values are floats in range 0-1
+        *     half-normalized returns a tuple(H, S, P) where the values are H in range 0-359, SP in range 0-1
+        *     round returns a tuple(H, S, P) where the values are integers. H in range 0-359, SP in range 0-100
+        *     direct returns a tuple(H, S, P) where the values are floats in range 0-100
+        *     In any invalid case the "direct" approach will be used
+
+    #### N/B: Don't use round output if the output color is going to be used to further conversion!
+
+    Reference: http://alienryderflex.com/hsp.html
+
+    ### Returns:
+        tuple[int, int, int] | tuple[float, float, float]: (H, S, P)
+    """
+    # Check color integrity
+    R, G, B = ih.check_color(color, depth=depth, normalized=True)
+    # Linearize
+    if apply_gamma:
+        R, G, B = convert_to_linear((R, G, B), "SRGB", normalized=True)
+
+    # Calculate Weighted Euclidean Norm of the R, G, B Vector (Perceived brightness)
+    P = (0.299 * R * R + 0.587 * G * G + 0.114 * B * B) ** 0.5
+
+    # Check if color is in grayscale
+    if R == G == B:
+        return 0, 0, P
+
+    # Get Hue and Saturation
+    H = cu.get_hue(R, G, B, depth=depth, output="normalized")
+    S = (max(R, G, B) - min(R, G, B)) / max(R, G, B)
+
+    return ih.return_hsw((H, S, P), normalized_input=True, output=output)
+
+
+def hsp_to_rgb(*HSP, depth: int = 8, apply_gamma=True, output="round"):
+    """### Takes an HSP color and returns R, G, B values.
+
+    #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
+        If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
+
+    ### Args:
+        `color` (int | float | str | tuple | list): String "add1c7", "#effec7", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
+        `apply_gamma` (bool): Applies gamma to the R, G, B color upon output. Defaults to True.
+        `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
+        *     hex returns a hex string color in the form of decade
+        *     hexp returns a hex string color in the form of #facade
+        *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
+        *     round returns a tuple(R, G, B) where the values are integers in range 0-255
+        *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
+        *     In any invalid case the "direct" approach will be used
+
+    #### N/B: Don't use round output if the output color is going to be used to further conversion!
+
+    Reference: http://alienryderflex.com/hsp.html
+    ITU BT.601 / Rec. 601
+
+    ### Returns:
+        tuple[int, int, int] | tuple[float, float, float]: (H, S, P)
+    """
+    if depth % 1 != 0:
+        raise ValueError("Depth value must be an integer number passed either as int or float")
+
+    # Check values integrity
+    H, S, P = ih.check_hsw(HSP, output="normalized")
+
+    min_over_max = 1 - S
+    Pr, Pg, Pb = 0.299, 0.587, 0.114 # Get constant weights
+
+    # Calculate R, G, B based on the Hue
+    if S < 1:
+        if H < 1 / 6:  # R > G > B
+            H = 6 * H
+            part = 1 + H * (1 / min_over_max - 1)
+            B = P / (Pr / min_over_max ** 2 + Pg * part ** 2 + Pb) ** 0.5
+            R = B / min_over_max
+            G = B + H * (R - B)
+        elif H < 2 / 6:  # G > R > B
+            H = 6 * (-H + 2 / 6)
+            part = 1 + H * (1 / min_over_max - 1)
+            B = P / (Pg / min_over_max **2 + Pr * part **2 + Pb) ** 0.5
+            G = B / min_over_max
+            R = B + H * (G - B)
+        elif H < 3 / 6:  # G > B > R
+            H = 6 * (H - 2 / 6)
+            part = 1 + H * (1 / min_over_max - 1)
+            R = P / (Pg / min_over_max **2 + Pb * part ** 2 + Pr) ** 0.5
+            G = R / min_over_max
+            B = R + H * (G - R)
+        elif H < 4 / 6:  # B > G > R
+            H = 6 * (-H + 4 / 6)
+            part = 1 + H * (1 / min_over_max - 1)
+            R = P / (Pb / min_over_max ** 2 + Pg * part ** 2 + Pr) ** 0.5
+            B = R / min_over_max
+            G = R + H * (B - R)
+        elif H < 5 / 6:  # B > R > G
+            H = 6 * ( H - 4 / 6)
+            part = 1 + H * (1 / min_over_max - 1)
+            G = P / (Pb / min_over_max ** 2 + Pr * part ** 2 + Pg) ** 0.5
+            B = G / min_over_max
+            R = G + H * (B - G)
+        else:              # R > B > G
+            H = 6 * (-H + 1)
+            part = 1 + H * (1 / min_over_max - 1)
+            G = P / (Pr / min_over_max ** 2 + Pb * part ** 2 + Pg) ** 0.5
+            R = G / min_over_max
+            B = G + H * (R - G)
+    elif H < 1 / 6:  # R > G > B
+        H = 6 * H
+        R = (P ** 2 / (Pr + Pg * H ** 2)) ** 0.5
+        G = R * H
+        B = 0
+    elif H < 2 / 6:  # G > R > B
+        H = 6 * (-H + 2 / 6)
+        G = (P ** 2 / (Pg + Pr * H ** 2)) ** 0.5
+        R = G * H
+        B = 0
+    elif H < 3 / 6:  # G > B > R
+        H = 6 * ( H - 2 / 6)
+        G = (P ** 2 / (Pg + Pb * H ** 2)) ** 0.5
+        B = G * H
+        R = 0
+    elif H < 4 / 6:  # B > G > R
+        H = 6 * (-H + 4 / 6)
+        B = (P ** 2 / (Pb + Pg * H ** 2)) ** 0.5
+        G = B * H
+        R = 0
+    elif H < 5 / 6:  # B > R > G
+        H = 6 * ( H - 4 / 6)
+        B = (P ** 2 / (Pb + Pr * H ** 2)) ** 0.5
+        R = B * H
+        G = 0
+    else:  # R > B > G
+        H = 6 * (-H + 1)
+        R = (P ** 2 / (Pr + Pb * H ** 2)) ** 0.5
+        B = R * H
+        G = 0
+
+    # Apply gamma
+    if apply_gamma:
+        R, G, B = (1.055 * (i ** (1 / 2.4)) - 0.055 if i > 0.0031308 else i * 12.92 for i in (R, G, B))
+
+    return ih.return_rgb((R, G, B), depth=depth, normalized_input=True, output=output)
+
+
 def rgb_to_xyz(
     *color: str | tuple | list,
     illuminant: str = "D65",
     observer: int | float | str = "2",
     adaptation: str = "bradford",
-    output: str = "round"):
+    output: str = "direct"):
     """### Takes an 8-bit sRGB color and returns its XYZ values (where Y is Luminance)
 
     ### Args:
@@ -650,7 +885,7 @@ def rgb_to_xyz_alt(
     observer: str | int | int = "2",
     adaptation: str = "bradford",
     color_space: str = "sRGB",
-    output: str = "round"):
+    output: str = "direct"):
     """### Takes an 8-bit sRGB color and returns its XYZ values (where Y is Luminance)
 
     #### This is an alternative way to convert from sRGB to XYZ color. The output of both methods \
@@ -1055,6 +1290,8 @@ def lab_to_xyz(
         * direct returns a tuple(X, Y, Z) where the values are floats in range 0-100
         * In any invalid case the "direct" approach will be returned
 
+    ### Return:
+            tuple[int, int, int] | tuple[float, float, float]: X, Y, Z in range 0-100 or 0-1
     """
     # Check values integrity
     if not 0 <= LAB[0] <= 100:
@@ -1098,74 +1335,81 @@ def lab_to_xyz(
             return X*100, Y*100, Z*100
 
 
-def convert_to_linear(RGB: tuple | list, color_space: str, normalized: bool = False):
-    """Takes R, G, B values and converts them to Linear R, G, B values based on their color space
+def xyz_to_yxy(*XYZ: int | float  | tuple | list, big_float: bool = True, output: str = "direct") -> tuple:
+    """### Converts XYZ color to Yxy
 
-    Args:
-        RGB (tuple | list): The R, G, B values to be converted
-        color_space (str): The color space that the R, G, B values are in
-        normalized (bool, optional): Returns the output in range 0-1 instead of 0-100
+    ### Args:
+        `XYZ` (int, float, tuple, list): XYZ values in 3 consecutive int(0, 100), float(0, 100) or float(0, 1) or
+            list/tuple containing the same
+        `big_float` (bool, optional): Wether the input XYZ values are floats in range 0-100. Defaults to True.
+        `output` (str, optional): Either "normalized", "round" or "direct"
+        * normalized returns a tuple(Y, x, y) where the values are floats in range 0-1
+        * round returns a tuple(Y, x, y) where the values are integers in range 0-100
+        * direct returns a tuple(Y, x, y) where the values are floats in range 0-100
+        * In any invalid case the "direct" approach will be returned
 
-    Returns:
-        tuple[R, G, B]
+    ### Returns:
+        tuple[int, int, int] | tuple[float, float, float] : Yxy
     """
-    if color_space == "SRGB":
-        R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in RGB)
-    elif color_space == "PROPHOTO":
-        R, G, B = (i ** 1.8 if i > 16 * (1/512) else i / 16 for i in RGB)
-    elif color_space == "REC 2020":
-        R, G, B = (i / 4.5 if abs(i) < xyz.BETA * 4.5 else ((abs(i) + xyz.ALPHA - 1) / xyz.ALPHA) ** 1 / 0.45 for i in RGB)
-    elif xyz.color_space_props[color_space]["gamma"] == "L*":
-        R, G, B = (((i + 0.16) / 1.16) ** 3 if i < 0.08 else (100 * i) / xyz.CIE_K for i in RGB)
-    else:
-        R, G, B = (i **  xyz.color_space_props[color_space]["gamma"] if i > 0 else 0 for i in RGB)
+    # Watch out for black, where X=Y=Z=0. In that case, you may want to
+    # set x and y to the chromaticity coordinates of your reference white
+    X, Y, Z = ih.check_xyz(XYZ, big_float=big_float, normalized=True)
+    x = X / (X + Y + Z)
+    y = Y / (X + Y + Z)
 
-    return (R, G, B) if normalized else (R * 100, G * 100, B * 100)
+    match output:
+        case "round":
+            return round(Y*100), round(x*100), round(y*100)
+        case "normalized":
+            return Y, x , y
+        case _:
+            return Y*100, x*100, y*100
 
 
-def convert_linear_to(RGB, color_space):
-    """Takes linear R, G, B values and applies gamma to them based on the desired color space
+def yxy_to_xyz(*Yxy: int | float | tuple | list, big_float: bool = True, output: str = "direct") -> tuple:
+    """### Converts Yxy color to XYZ
 
-    Args:
-        RGB (tuple | list): The R, G, B values to be converted
-        color_space (str): The color space that the R, G, B will be converted to
+    ### Args:
+        `Yxy` (int, float, tuple, list): Yxy values in 3 consecutive int(0, 100), float(0, 100) or float(0, 1) or
+            list/tuple containing the same
+        `big_float` (bool, optional): Wether the input Yxy values are floats in range 0-100. Defaults to True.
+        `output` (str, optional): Either "normalized", "round" or "direct"
+        * normalized returns a tuple(X, Y, Z) where the values are floats in range 0-1
+        * round returns a tuple(X, Y, Z) where the values are integers in range 0-100
+        * direct returns a tuple(X, Y, Z) where the values are floats in range 0-100
+        * In any invalid case the "direct" approach will be returned
 
-    Returns:
-        tuple[R, G, B]
+    ### Returns:
+        tuple[int, int, int] | tuple[float, float, float] : XYZ
     """
-    # Apply gamma
-    if color_space == "SRGB":
-        R, G, B = (1.055 * (i ** (1 / 2.4)) - 0.055 if i > 0.0031308 else i * 12.92 for i in RGB)
-    elif color_space == "PROPHOTO":
-        R, G, B = (i ** (1/1.8) if i > (1/512) else 16 * i for i in RGB)
-    elif color_space == "REC 2020":
-        R, G, B = (4.5 * i if i < xyz.BETA else xyz.ALPHA * i ** 0.45 - (xyz.ALPHA - 1) for i in RGB)
-    elif xyz.color_space_props[color_space]["gamma"] == "L*":
-        R, G, B = (1.16 * i ** (1/3) if i > xyz.CIE_E else (i * xyz.CIE_K) / 100 for i in RGB)
-    else:
-        R, G, B = (i **  (1 / xyz.color_space_props[color_space]["gamma"]) if i > 0 else 0 for i in RGB)
+    Y, x, y = ih.check_xyz(Yxy, big_float=big_float, normalized=True)
+    X = x * (Y / y)
+    Z = (1 - x - y) * (Y / y)
 
-    return R, G, B
+    match output:
+        case "round":
+            return round(X*100), round(Y*100), round(Z*100)
+        case "normalized":
+            return X, Y, Z
+        case _:
+            return X*100, Y*100, Z*100
 
 
-#######################################################################
-# From this point on the functions aren't documented
-# They work, but will soon be reworked to be more flexible
-#######################################################################
-
-def rgb_to_cmyk(*color: str | tuple | list, normalized=False) -> tuple:
-    """Takes a color and returns its CMYK (Cyan, Magenta, Yellow, Key) representation
+def rgb_to_cmyk(*color: int| float | str | tuple | list, normalized: bool = False) -> tuple:
+    """### Takes a color and returns its CMYK (Cyan, Magenta, Yellow, Key) representation
 
     #### This function only calculates the CMYK in D65 illuminant. The result doesn't match Photoshop's
         output because Photoshop uses D50 illuminant in the conversion
 
-    Args:
-        normalized (bool, optional): Wether to return the values in float range 0-1 instead of the default int range 0-100
+    ### Args:
+        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        `normalized` (bool, optional): Returns the values in float range 0-1 instead of the default int range 0-100
 
-    Returns:
+    ### Returns:
         tuple: CMYK
     """
-
+    # Check color integrity
     R, G, B = ih.check_color(color, normalized=True)
 
     # Calculate the black key
@@ -1180,12 +1424,30 @@ def rgb_to_cmyk(*color: str | tuple | list, normalized=False) -> tuple:
     # Calculate the yellow
     Y = (1 - B - K) / (1 - K)
 
-    return (C, M, Y, K) if normalized else tuple(round(i * 100) for i in (C, M, Y, K))
+    return (C, M, Y, K) if normalized else [round(i * 100) for i in (C, M, Y, K)]
 
 
-def cmyk_to_rgb(*CMYK, normalized: bool = False):
-    """Converts CMYK to RGB values"""
+def cmyk_to_rgb(*CMYK: int | float | tuple | list, output: str = "round"):
+    """### Converts CMYK to RGB values
 
+    #### This function only calculates the CMYK in D65 illuminant. The result doesn't match Photoshop's
+        output because Photoshop uses D50 illuminant in the conversion
+
+    ### Args:
+        `CMYK` (int | float | tuple | list): Consecutive values either int in range 0-100 or float in range 0-1 or
+        a CMYK list/tuple(C, M, Y, K) with the same values.
+        `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
+        *     hex returns a hex string color in the form of decade
+        *     hexp returns a hex string color in the form of #facade
+        *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
+        *     round returns a tuple(R, G, B) where the values are integers in range 0-255
+        *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
+        *     In any invalid case the "direct" approach will be used
+
+    ### Returns:
+        tuple: CMYK
+    """
+    # Check values integrity
     if len(CMYK) == 1:
         CMYK = CMYK[0]
     elif len(CMYK) != 4:
@@ -1195,31 +1457,33 @@ def cmyk_to_rgb(*CMYK, normalized: bool = False):
         if not isinstance(elem, (int, float)):
             raise TypeError("All elements should be either integers or floats!")
 
+    # Normalized values
     C, M, Y, K = (i / 100 for i in CMYK)
 
+    # Calculate R, G, B
     R = (1 - C) * (1 - K)
     G = (1 - M) * (1 - K)
     B = (1 - Y) * (1 - K)
 
-    return (R, G, B) if normalized else (round(R * 255), round(G * 255), round(B * 255))
+    return ih.return_rgb((R, G, B), normalized_input=True, output=output)
 
 
-def srgb_to_adobe_rgb(
-    *color: str | tuple | list,
-    illuminant: str = "D65",
-    observer: str | int | float = "2",
-    adaptation: str = "bradford",
-    output: str = "round") -> tuple:
-    """Takes an sRGB color and returns its Adobe RGB representation
+def srgb_to_adobe_rgb(*color: int | float | str | tuple | list, output: str = "round"):
+    """### Takes an sRGB color and returns its Adobe RGB representation
 
-    Args:
-        color
-        illuminant
-        observer
-        adaptation
-        output
+    ### Args:
+        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        `illuminant` (str, optional): The iluminant of the output Adobe R, G, B color. Defaults to 'D65'
+        `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
+        *     hex returns a hex string color in the form of decade
+        *     hexp returns a hex string color in the form of #facade
+        *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
+        *     round returns a tuple(R, G, B) where the values are integers in range 0-255
+        *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
+        *     In any invalid case the "direct" approach will be used
 
-    Returns:
+    ### Returns:
         tuple: R, G, B
     """
     # Check color integrity
@@ -1228,23 +1492,43 @@ def srgb_to_adobe_rgb(
     X, Y, Z = rgb_to_xyz(R, G, B, illuminant="D65", observer="2", adaptation="bradford", output="normalized")
 
     # Generate a conversion matrix for Adobe RGB
-    matrix = xyz.working_space_matrix("ADOBE RGB", illuminant, observer, adaptation, to_xyz=False)
+    matrix = xyz.working_space_matrix("ADOBE RGB", "D65", "2", "bradford", to_xyz=False)
     """matrix = (   # Wikipedia                         # Lindbloom
         ( 2.04159, -0.56501, -0.34473),  #  2.0413690 -0.5649464 -0.3446944
         (-0.96924,  1.87597,  0.04156),  # -0.9692660  1.8760108  0.0415560
         ( 0.01344, -0.11836,  1.01517))  #  0.0134474 -0.1183897  1.0154096"""
 
+    # Apply conversion matrix
     R, G, B = ((X * matrix[i][0]) + (Y * matrix[i][1]) + (Z * matrix[i][2]) for i in range(3))
+
     # Apply gamma to get Adobe RGB
     R, G, B = (i **  (1 / xyz.color_space_props["ADOBE RGB"]["gamma"]) if i > 0 else 0 for i in (R, G, B))
 
-    match output:
-        case "round":
-            return round(R * 255), round(G * 255), round(B * 255)
-        case "normalized":
-            return R, G, B
-        case _:
-            return R * 255, G * 255, B * 255
+    return ih.return_rgb((R, G, B), normalized_input=True, output=output)
+
+
+def adobe_rgb_to_srgb(
+    *color: int | float | str | tuple | list,
+    output: str = "hex")-> str | tuple :
+    """### Takes an Adobe RGB color and returns its sRGB representation
+
+    ### Args:
+        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
+        *     hex returns a hex string color in the form of decade
+        *     hexp returns a hex string color in the form of #facade
+        *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
+        *     round returns a tuple(R, G, B) where the values are integers in range 0-255
+        *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
+        *     In any invalid case the "direct" approach will be used
+
+    ### Returns:
+        str | tuple: R, G, B
+    """
+    # Convert to X, Y, Z and then to sRGB
+    X, Y, Z = adobe_rgb_to_xyz(*color, illuminant="D65", observer="2", adaptation="bradford", output="normalized")
+    return xyz_to_rgb(X, Y, Z, output=output)
 
 
 def adobe_rgb_to_xyz(
@@ -1252,18 +1536,23 @@ def adobe_rgb_to_xyz(
     illuminant: str = "D65",
     observer: str | int | float = "2",
     adaptation: str = "bradford",
-    round_: bool = True):
-    """Takes an Adobe RGB color and returns its XYZ representation
+    output: str = "direct"):
+    """### Takes an Adobe RGB color and returns its XYZ representation
 
-    Args:
-        color
-        illuminant (str, optional): _description_. Defaults to "D65".
-        observer (str | int | float, optional): _description_. Defaults to "2".
-        adaptation (str, optional): _description_. Defaults to "bradford".
-        round_ (bool, optional): _description_. Defaults to True.
+    ### Args:
+        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        `illuminant` (str, optional): The iluminant of the output XYZ color. Defaults to 'D65'
+        `observer` (str | int | float): The observer angle for the illuminant of the XYZ values. Defaults to "2"
+        `adaptation` (str): The adaptation method to be used for illuminant conversions. Defaults to "bradford"
+        `output` (str, optional): Either "normalized", "round" or "direct"
+        * normalized returns a tuple(X, Y, Z) where the values are floats in range 0-1
+        * round returns a tuple(X, Y, Z) where the values are integers in range 0-100
+        * direct returns a tuple(X, Y, Z) where the values are floats in range 0-100
+        * In any invalid case the "direct" approach will be returned
 
-    Returns:
-        tuple: X, Y, Z
+    ### Returns:
+        tuple[int, int, int] | tuple[float, float, float]: X, Y, Z in range 0-100 | 0-1
     """
     # Check color integrity
     R, G, B = ih.check_color(color, normalized=True)
@@ -1280,157 +1569,13 @@ def adobe_rgb_to_xyz(
         (0.29734, 0.62736, 0.07529),  # 0.2973769  0.6273491  0.0752741
         (0.02703, 0.07069, 0.99134))  # 0.0270343  0.0706872  0.9911085"""
 
-    # Calculate XYZ
+    # Apply conversiion matrix
     X, Y, Z = ((R * matrix[i][0]) + (G * matrix[i][1]) + (B * matrix[i][2]) for i in range(3))
 
-    return (round(X), round(Y), round(Z)) if round_ else (X, Y, Z)
-
-
-def adobe_rgb_to_srgb(
-    *color: str | tuple | list,
-    illuminant: str = "D65",
-    observer: str | int | float = "2",
-    adaptation: str = "bradford",
-    output: str = "hex") -> str | tuple:
-    """Takes an Adobe RGB color and returns its sRGB representation
-
-    Args:
-        illuminant (str, optional): _description_. Defaults to "D65".
-        observer (str | int | float, optional): _description_. Defaults to "2".
-        adaptation (str, optional): _description_. Defaults to "bradford".
-        output (str, optional): _description_. Defaults to "hex".
-
-    Returns:
-        str | tuple: _description_
-    """
-    X, Y, Z = adobe_rgb_to_xyz(*color, illuminant=illuminant, observer=observer, adaptation=adaptation, round_=False)
-    return xyz_to_rgb(X, Y, Z, output=output)
-
-
-def xyz_to_yxy(*XYZ):
-    """TEST"""
-    # Watch out for black, where X=Y=Z=0. In that case, you may want to set x and y to the chromaticity coordinates of your reference white
-    X, Y, Z = XYZ
-    x = X / (X + Y + Z)
-    y = Y / (X + Y + Z)
-    return Y, x, y
-
-
-def yxy_to_xyz(*Yxy):
-    """TEST"""
-    Y, x, y = Yxy
-    X = x * (Y / y)
-    Z = (1 - x - y) * (Y / y)
-    return X, Y, Z
-
-
-def rgb_to_web_safe(*color):
-    """TEST"""
-    R, G, B = ih.check_color(color)
-    R, G, B = (int(round((i / 255) * 5) * 51) for i in (R, G, B))
-
-    return (R, G, B)
-
-
-
-######################################################
-
-
-def rgb_to_hsp(*color, apply_gamma=True, output="round"):
-    """TEST"""
-    # Source: http://alienryderflex.com/hsp.html
-    R, G, B = ih.check_color(color, normalized=True)
-    if apply_gamma:
-        R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in (R, G, B))
-
-    P = (0.299 * R * R + 0.587 * G * G + 0.114 * B * B) ** 0.5
-
-    if R == G == B:
-        return 0, 0, P
-
-    H = cu.get_hue(R, G, B, output="normalized")
-    S = (max(R, G, B) - min(R, G, B)) / max(R, G, B)
-
-    return ih.return_hsw((H, S, P), normalized_input=True, output=output)
-
-
-def hsp_to_rgb(*HSP, apply_gamma=True, output="round"):
-    """TEST"""
-    # Source: http://alienryderflex.com/hsp.html
-    H, S, P = ih.check_hsw(HSP, output="normalized")
-    # ITU BT.601 / Rec. 601
-
-    min_over_max = 1 - S
-    Pr, Pg, Pb = 0.299, 0.587, 0.114
-
-    if S < 1:
-        if H < 1 / 6:  # R > G > B
-            H = 6 * H
-            part = 1 + H * (1 / min_over_max - 1)
-            B = P / (Pr / min_over_max ** 2 + Pg * part ** 2 + Pb) ** 0.5
-            R = B / min_over_max
-            G = B + H * (R - B)
-        elif H < 2 / 6:  # G > R > B
-            H = 6 * (-H + 2 / 6)
-            part = 1 + H * (1 / min_over_max - 1)
-            B = P / (Pg / min_over_max **2 + Pr * part **2 + Pb) ** 0.5
-            G = B / min_over_max
-            R = B + H * (G - B)
-        elif H < 3 / 6:  # G > B > R
-            H = 6 * (H - 2 / 6)
-            part = 1 + H * (1 / min_over_max - 1)
-            R = P / (Pg / min_over_max **2 + Pb * part ** 2 + Pr) ** 0.5
-            G = R / min_over_max
-            B = R + H * (G - R)
-        elif H < 4 / 6:  # B > G > R
-            H = 6 * (-H + 4 / 6)
-            part = 1 + H * (1 / min_over_max - 1)
-            R = P / (Pb / min_over_max ** 2 + Pg * part ** 2 + Pr) ** 0.5
-            B = R / min_over_max
-            G = R + H * (B - R)
-        elif H < 5 / 6:  # B > R > G
-            H = 6 * ( H - 4 / 6)
-            part = 1 + H * (1 / min_over_max - 1)
-            G = P / (Pb / min_over_max ** 2 + Pr * part ** 2 + Pg) ** 0.5
-            B = G / min_over_max
-            R = G + H * (B - G)
-        else:              # R > B > G
-            H = 6 * (-H + 1)
-            part = 1 + H * (1 / min_over_max - 1)
-            G = P / (Pr / min_over_max ** 2 + Pb * part ** 2 + Pg) ** 0.5
-            R = G / min_over_max
-            B = G + H * (R - G)
-    elif H < 1 / 6:  # R > G > B
-        H = 6 * H
-        R = (P ** 2 / (Pr + Pg * H ** 2)) ** 0.5
-        G = R * H
-        B = 0
-    elif H < 2 / 6:  # G > R > B
-        H = 6 * (-H + 2 / 6)
-        G = (P ** 2 / (Pg + Pr * H ** 2)) ** 0.5
-        R = G * H
-        B = 0
-    elif H < 3 / 6:  # G > B > R
-        H = 6 * ( H - 2 / 6)
-        G = (P ** 2 / (Pg + Pb * H ** 2)) ** 0.5
-        B = G * H
-        R = 0
-    elif H < 4 / 6:  # B > G > R
-        H = 6 * (-H + 4 / 6)
-        B = (P ** 2 / (Pb + Pg * H ** 2)) ** 0.5
-        G = B * H
-        R = 0
-    elif H < 5 / 6:  # B > R > G
-        H = 6 * ( H - 4 / 6)
-        B = (P ** 2 / (Pb + Pr * H ** 2)) ** 0.5
-        R = B * H
-        G = 0
-    else:  # R > B > G
-        H = 6 * (-H + 1)
-        R = (P ** 2 / (Pr + Pb * H ** 2)) ** 0.5
-        B = R * H
-        G = 0
-    if apply_gamma:
-        R, G, B = (1.055 * (i ** (1 / 2.4)) - 0.055 if i > 0.0031308 else i * 12.92 for i in (R, G, B))
-
-    return ih.return_rgb((R, G, B), normalized_input=True, output=output)
+    match output:
+        case "round":
+            return round(X), round(Y), round(Z)
+        case "normalized":
+            return X / 100, Y / 100, Z / 100
+        case _:
+            return X, Y, Z

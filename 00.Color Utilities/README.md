@@ -37,6 +37,12 @@ This module consists of functions for converting a color from one form to anothe
 It consists of the following functions:
 
 
+#### rgb_to_web_safe
+Converts an 8-bit sRGB color to a web safe color.
+
+### convert_to_linear & convert_linear_to
+Converts gamma corrected R, G, B values to linear and vice-versa
+
 #### hex_to_rgb & rgb_to_hex
 Converts a hexadecimal color representation to R, G, B set of values and vice-versa.
 
@@ -74,8 +80,8 @@ More info on that can be found in the `additionals` module
 #### xyz_to_lab & lab_to_xyz
 Converts an X, Y, Z color to its L*ab representation and vice-versa.
 
-### convert_to_linear & convert_linear_to
-Converts gamma corrected R, G, B values to linear and vice-versa
+#### xyz_to_yxy & yxy_to_xyz
+Converts between X, Y, Z and Y, x, y colors.
 
 #### rgb_to_cmyk & cmyk_to_rgb
 Converts an R, G, B color to its CMYK (Cyan, Magenta, Yellow, Key) representation and vice-versa.
@@ -91,12 +97,6 @@ code isn't refined yet.
 Converts an R, G, B color in Adobe RGB color space to its XYZ representation
 This one might be deleted (or at least moved to the `additionals` module) since the `rgb_to_xyz_alt`
 function allows input from any supported color space (which includes Adobe RGB)!
-
-#### xyz_to_yxy & yxy_to_xyz
-Converts between X, Y, Z and Y, x, y colors.
-
-#### rgb_to_web_safe
-Converts an 8-bit sRGB color to a web safe color.
 
 
 ###  color_utils
@@ -271,6 +271,7 @@ An alternative calculation method for converting H, S, L values to R, G, B. Need
 ### Better comments extension settings:
 Paste these in VSCode's settings.json file andter installing the extension and restart so the changes can take effect.
 
+```
 "better-comments.tags": [
     {
     "tag": "!",
@@ -345,3 +346,4 @@ Paste these in VSCode's settings.json file andter installing the extension and r
     "italic": false
     }
 ]
+```

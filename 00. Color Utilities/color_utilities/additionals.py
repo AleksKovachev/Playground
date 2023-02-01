@@ -12,6 +12,7 @@ from . import converters as co
 # pylint: disable=invalid-name, unpacking-non-sequence, unsubscriptable-object
 
 #= Reading material and references
+# More info: https://blender.stackexchange.com/questions/173981/integrating-cg-imagery-with-footage-from-cameras-using-aces
 # More info: https://stackoverflow.com/questions/2612361/convert-rgb-values-to-equivalent-hsv-values-using-python
 # Luma: https://en.wikipedia.org/wiki/Luma_(video)
     # Rec 709 (sRGB):      Yr = 0.2126, Yg = 0.7152, Yb = 0.0722
@@ -25,8 +26,12 @@ from . import converters as co
     # Rec 240  (sRGB):       Yr = 0.212,  Yg = 0.701,  Yb = 0.087
 
 #! This Luma is the Y value in xyY and in primaries
-Rec601Luma = '0.298839R  + 0.586811G  + 0.114350B'
-Rec709Luma = '0.212656R  + 0.715158G  + 0.072186B'
+Rec601Luma = '0.298839R + 0.586811G + 0.114350B'
+Rec709Luma = '0.212656R + 0.715158G + 0.072186B'
+Rec2020Luma = '0.2627R + 0.678G + 0.0593B'
+Rec2100Luma = '0.2627R + 0.678G + 0.0593B'
+
+# BT.470-625 (PAL) = '0.299R + 0.587G + 0.114B'
 
 
 """ #! According to Wikipedia, the D65 matrix for sRGB to XYZ
@@ -233,7 +238,7 @@ ILLUMINANT_WHITEPOINTS = { # According to colour science library: https://github
         "D60":      ((0.321616709705268, 0.337619916550817), (0.322986926715820, 0.339275732345997)),
         "D65":      ((0.31270, 0.32900), (0.31382, 0.33100)),
         "D75":      ((0.29903, 0.31488), (0.29968, 0.31740)),
-        "E":        ((1 / 3, 1 / 3), (1 / 3, 1 / 3)),
+        "E":        ((1/3, 1/3), (1/3, 1/3)),
         "FL1":      ((0.31310, 0.33710), (0.31811, 0.33559)),
         "FL2":      ((0.37210, 0.37510), (0.37925, 0.36733)),
         "FL3":      ((0.40910, 0.39410), (0.41761, 0.38324)),
@@ -277,6 +282,17 @@ ILLUMINANT_WHITEPOINTS = { # According to colour science library: https://github
         "LED-V2":   ((0.37810, 0.37750), (0.377728483834020, 0.374512315539769)),
         "ID65":     ((0.310656625403120, 0.330663091836953), (0.312074043269908, 0.332660121024630)),
         "ID50":     ((0.343211370103531, 0.360207541805137), (0.345621427535976, 0.361228962209198)),
+        "ACES":     ((0.32168, 0.33767)),  # This standard only has values for 2 degrees
+        "Blackmagic Wide Gamut": ((0.312717, 0.3290312)),  # This standard only has values for 2 degrees
+        "DCI-P3":   ((0.314, 0.351)),  # This standard only has values for 2 degrees
+        "ICC D50":  ((0.34570291, 0.3585386)),  # This standard only has values for 2 degrees
+        "ISO 7589 Photographic Daylight": ((0.3320391, 0.34726389), (0.33371691, 0.34859249)),
+        "ISO 7589 Sensitometric Daylight": ((0.33381831, 0.35343623), (0.33612591, 0.35499706)),
+        "ISO 7589 Studio Tungsten": ((0.43094409, 0.40358544), (0.43457593, 0.40221969)),
+        "ISO 7589 Sensitometric Studio Tungsten": ((0.43141822, 0.40747144), (0.43560767, 0.40612924)),
+        "ISO 7589 Photoflood": ((0.41114602, 0.39371938), (0.41414465, 0.39245859)),
+        "ISO 7589 Sensitometric Photoflood": ((0.41202478, 0.39817741), (0.41562582, 0.39700229)),
+        "ISO 7589 Sensitometric Printer": ((0.41208797, 0.42110498), (0.41884105, 0.41869513))
 }
 
 #= The Olympus E-M1 characterization matrices for the 4200 and 6800 K calibration illuminants
@@ -289,7 +305,8 @@ wp_6800K = (0.4793, 1.0000, 0.7312)
 
 # This is a set of matrices for conversion to and from a given color space using its default illuminant
 # TO50 and FROM50 are matrices to convert to/from given color space in illuminant D50 without it being the default one
-COLOR_SPACE_MATRICES = { #! These are not included in the actual code because the working_space_matrix function in the xyz.py module generates these and more
+COLOR_SPACE_MATRICES = {
+    #! These are not included in the actual code because the working_space_matrix function in the xyz.py module generates these and more
     "TO": {
         "ADOBE RGB":      ((2.041369,  -0.5649464, -0.3446944), (-0.969266,  1.8760108,  0.041556 ), (0.0134474, -0.1183897, 1.0154096)),   # D65
         "APPLE RGB":      ((2.9515373, -1.2894116, -0.4738445), (-1.0851093, 1.9908566,  0.0372026), (0.0854934, -0.2694964, 1.0912975)),   # D65

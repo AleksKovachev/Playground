@@ -8,6 +8,7 @@ import color_utilities.color_utils as cu
 import color_utilities.converters as co
 import color_utilities.internal_helpers as ih
 from color_utilities import xyz
+from color_utilities import transfer_functions as tf
 
 
 # Lightness Test
@@ -34,7 +35,7 @@ COLORS = {#*      B>G>R                B>R>G           R=G=B           G>R>B    
         "hsi_h-norm":  ((215, 39/100, 50/100), (264, 57/100, 51/100), (0, 0/100, 29/100),
                     (69, 33/100, 53/100), (45, 29/100, 80/100), (347, 100/100, 40/100)),
         "xyz_d65": ((19, 19, 48), (21, 12, 64),     (6, 7, 7),    (28, 33, 15),    (68, 73, 37),        ()),
-        "xyz_d50": ((19, 19, 48), (21, 12, 64),     (6, 7, 7),    (29, 33, 11),    (71, 74, 28),        ()),
+        "xyz_d50": ((19, 19, 48), (19, 11, 64),     (6, 7, 7),    (29, 33, 11),    (71, 74, 28),        ()),
 }
 
 # Color brightness method comarison
@@ -102,7 +103,7 @@ def cmyk_tests():
 
 #* XYZ
 def xyz_():
-    print(f"rgb_to_xyz: {rgb_to_xyz('7838d5', illuminant='D50')}")
+    print(f"rgb_to_xyz: {rgb_to_xyz('7838d5', illuminant='D50', output='round')}")
     print(f"rgb_to_xyz: {rgb_to_xyz(254/255, 220/255, 145/255, output='direct')}")
     print(f"xyz_to_rgb: {xyz_to_rgb(21, 12, 64)}")
     print(f"xyz_to_rgb: {xyz_to_rgb(71.57919445658126, 74.30465989427253, 37.35442174882148)}")

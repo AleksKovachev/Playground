@@ -31,20 +31,22 @@ def get_color_brightness(
         2. The Average of the RGB Values (Intensity in HSI)
         3. The Average of the Smallest and Largest RGB Values (Lightness in HSL)
         4. Perceived brightness (P in HSP). Weighted Euclidean Norm of the [R, G, B] Vector
-        5. Perceived brightness old (P in HSP in Darel Rex Finley's formula)
-        6. Euclidean Norm of the [R, G, B] Vector
-        7. Geometric Mean of the R, G, B Components
-        8. Luma, Adobe
-        9. Luma, Rec709/sRGB (HDTV)
-        10. Luma, Rec2020 (UHDTV, HDR)
-        11. Luminance (Y) sRGB
-        12. Perceived Lightness (L*) from L*ab
+        5. Perceived brightness. Weighted Euclidean Norm of the [R, G, B] Vector (Linearized)
+        6. Perceived brightness old (P in HSP in Darel Rex Finley's formula)
+        7. Perceived brightness old (Linearized)
+        8. Euclidean Norm of the [R, G, B] Vector
+        9. Geometric Mean of the R, G, B Components
+        10. Luma, Adobe
+        11. Luma, Rec709/sRGB (HDTV)
+        12. Luma, Rec2020 (UHDTV, HDR)
+        13. Luminance (Y) sRGB
+        14. Perceived Lightness (L*) from L*ab
 
     ### Returns:
         int | float: How bright the color is on the scale 0-100 | 0-1
     """
 
-    if method not in (None, *range(13)):
+    if method not in (None, *range(15)):
         raise ValueError("Wrong method input!")
 
     # Display message if no method was given
@@ -53,15 +55,17 @@ def get_color_brightness(
         "1. The Maximum of the RGB Values (Value in HSV)",
         "2. The Average of the RGB Values (Intensity in HSI)",
         "3. The Average of the Smallest and Largest RGB Values (Lightness in HSL)",
-        "4. Perceived brightness (P in HSP). Weighted Euclidean Norm of the [R, G, B] Vector"
-        "5. Perceived brightness old (P in HSP in Darel Rex Finley's formula)"
-        "6. Euclidean Norm of the [R, G, B] Vector",
-        "7. Geometric Mean of the R, G, B Components",
-        "8. Luma, Adobe",
-        "9. Luma, Rec709/sRGB (HDTV)",
-        "10. Luma, Rec2020 (UHDTV, HDR)"
-        "11. Luminance (Y) sRGB"
-        "12. Perceived Lightness (L*) from L*ab\n"))
+        "4. Perceived brightness (P in HSP). Weighted Euclidean Norm of the [R, G, B] Vector",
+        "5. Perceived brightness. Weighted Euclidean Norm of the [R, G, B] Vector (Linearized)",
+        "6. Perceived brightness old (P in HSP in Darel Rex Finley's formula)",
+        "7. Perceived brightness old (Linearized)",
+        "8. Euclidean Norm of the [R, G, B] Vector",
+        "9. Geometric Mean of the R, G, B Components",
+        "10. Luma, Adobe",
+        "11. Luma, Rec709/sRGB (HDTV)",
+        "12. Luma, Rec2020 (UHDTV, HDR)"
+        "13. Luminance (Y) sRGB"
+        "14. Perceived Lightness (L*) from L*ab\n"))
         method = int(input(msg))
 
     # Check if the input color is valid
@@ -86,24 +90,30 @@ def get_color_brightness(
             #+ Alternative calculation. The one above is slightly faster.
             # denominator = max_value * (0.299 + 0.587 + 0.114) ** 0.5
             # brightness = (0.299 * R**2 + 0.587 * G**2 + 0.114 * B**2) ** 0.5 / denominator
-        case 5: #= P (perceived brightness) from HSP old
+        case 5: #= P (perceived brightness) from HSP. Weighted Euclidean Norm (Linearized)
+            R, G, B = co.convert_to_linear((R / max_value, R / max_value, B / max_value), "SRGB", normalized=True)
+            brightness = ((0.299 * R ** 2) + (0.587 * G ** 2) + (0.114 * B ** 2)) ** 0.5
+        case 6: #= P (perceived brightness) from HSP old
             brightness = ((0.241 * (R / max_value) ** 2) + (0.691 * (G / max_value) ** 2) + (0.068 * (B / max_value) ** 2)) ** 0.5
-        case 6:
+        case 7: #= P (perceived brightness) from HSP old (Linearized)
+            R, G, B = co.convert_to_linear((R / max_value, R / max_value, B / max_value), "SRGB", normalized=True)
+            brightness = ((0.241 * R ** 2) + (0.691 * G ** 2) + (0.068 * B ** 2)) ** 0.5
+        case 8:
             denominator = max_value * (3 ** 0.5)
             brightness = (R**2 + G**2 + B**2) ** 0.5 / denominator
-        case 7:
+        case 9:
             brightness = ((R * G * B) ** (1/3)) / max_value
-        case 8: #= Luma, Adobe
+        case 10: #= Luma, Adobe
             brightness = ((0.2126 * R) + (0.7152 * G) + (0.0722 * B)) / max_value
-        case 9: #= Luma, Rec709/sRGB (HDTV)
+        case 11: #= Luma, Rec709/sRGB (HDTV)
             brightness = ((0.212 * R) + (0.701 * G) + (0.087 * B)) / max_value
-        case 10: #= Luma, Rec2020 (UHDTV. HDR)
+        case 12: #= Luma, Rec2020 (UHDTV. HDR)
             brightness = ((0.2627 * R) + (0.6780 * G) + (0.0593 * B)) / max_value
-        case 11: #= Luminocity
+        case 13: #= Luminocity
             # Apply gamma before doing calculations
             R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in (R/max_value, G/max_value, B/max_value))
             brightness = (0.2126 * R) + (0.7152 * G) + (0.0722 * B)
-        case 12: #= L* from L*ab
+        case 14: #= L* from L*ab
             # Apply gamma before doing calculations
             R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in (R/max_value, G/max_value, B/max_value))
             Y = (0.2126 * R) + (0.7152 * G) + (0.0722 * B)
@@ -773,7 +783,19 @@ def convert_bit_depth(
 
 
 def alpha_blend(color1, color2, color1_alpha, color2_alpha):
-    """Alpha-blend color1 on color2."""
+    '''Alpha-blend this color on the other one.
+    Args:
+        :other:
+            The grapefruit.Color to alpha-blend with this one.
+    Returns:
+        A grapefruit.Color instance which is the result of alpha-blending
+        this color on the other one.
+    >>> c1 = Color.NewFromRgb(1, 0.5, 0, 0.2)
+    >>> c2 = Color.NewFromRgb(1, 1, 1, 0.8)
+    >>> c3 = c1.AlphaBlend(c2)
+    >>> str(c3)
+    '(1, 0.875, 0.75, 0.84)'
+    '''
     color1 = ih.check_color(color1)
     color2 = ih.check_color(color2)
 
@@ -796,7 +818,19 @@ def alpha_blend(color1, color2, color1_alpha, color2_alpha):
 
 
 def blend(color1, color2, color1_alpha=100, color2_alpha=100, percent=0.5):
-    """Blend color1 with color2."""
+    '''Blend this color with the other one.
+    Args:
+        :other:
+            the grapefruit.Color to blend with this one.
+    Returns:
+        A grapefruit.Color instance which is the result of blending
+        this color on the other one.
+    >>> c1 = Color.NewFromRgb(1, 0.5, 0, 0.2)
+    >>> c2 = Color.NewFromRgb(1, 1, 1, 0.6)
+    >>> c3 = c1.Blend(c2)
+    >>> str(c3)
+    '(1, 0.75, 0.5, 0.4)'
+    '''
     color1 = ih.check_color(color1)
     color2 = ih.check_color(color2)
 

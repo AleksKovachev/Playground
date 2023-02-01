@@ -11,271 +11,10 @@ It contains a few functions and a number of constants regarding different color 
 import numpy
 from numpy.linalg import pinv
 
+from .color_spaces import color_spaces as cs
+
 # Make it so that every floating point number numpy returns is displayed to the 15th digit after the decimal point
 numpy.set_printoptions(formatter={'float': '{:0.15f}'.format}, suppress=True)
-
-
-# TODO: Move this to a separate module or a JSON file
-# More: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-# More: https://en.wikipedia.org/wiki/RGB_color_spaces
-color_space_props = {
-    #! The primaries only have x and y values because z = 1 - x - y
-    #! The primary Yr, Yg, Yb (Luminance) can be found by using the res = working_space_matrix() function for
-        #! the desired color space and using the second row of the output res[1]
-    #! For reference and more infor use additionals.py
-    "NTSC": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "C",  # D65 according to: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "primaries": {
-            "xr": 0.67,   "yr": 0.33,
-            "xg": 0.21,   "yg": 0.71,
-            "xb": 0.14,   "yb": 0.08,
-        },
-        "gamma": 2.2,
-        "decoding gamma": 20/9},
-    "MUSE": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.63,   "yr": 0.34,
-            "xg": 0.31,   "yg": 0.595,
-            "xb": 0.155,  "yb": 0.07
-        },
-        "gamma": 2.5,
-        "decoding gamma": 20/9},
-
-    "APPLE RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.625,  "yr": 0.34,
-            "xg": 0.28,   "yg": 0.595,
-            "xb": 0.155,  "yb": 0.07,
-        },
-        "gamma": 1.8},
-
-    "PAL": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.64,   "yr": 0.33,
-            "xg": 0.29,   "yg": 0.60,
-            "xb": 0.15, "yb": 0.06,
-        },
-        "gamma": 2.8,
-        "decoding gamma": 14/5},
-    "SECAM": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.64,   "yr": 0.33,
-            "xg": 0.29,   "yg": 0.60,
-            "xb": 0.15,   "yb": 0.06,
-        },
-        "gamma": 2.8,
-        "decoding gamma": 14/5},
-
-    "SRGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html & https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.64,   "yr": 0.33,
-            "xg": 0.30,   "yg": 0.60,
-            "xb": 0.15,   "yb": 0.06,
-        },
-        "override_matrix": { #! An override matrix is one rounded by the color space inventor.
-            "D65": {         #! It's different of the one calculated by any formula.
-                "to_rgb": ((3.2406, -1.5372, -0.4986), (-0.9689, 1.8758, 0.0415), (0.0557, -0.2040, 1.0570)),
-                "to_xyz": ((0.4124, 0.3576, 0.1805), (0.2126, 0.7152, 0.0722), (0.0193, 0.1192, 0.9505))
-            }
-        },
-        "gamma": 2.2,  # The gamma is ~2.2 but the calculations are made using 2.4 due to old standards
-        "decoding gamma": 12/5},
-    "SCRGB": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.64,   "yr": 0.33,
-            "xg": 0.30,   "yg": 0.60,
-            "xb": 0.15,   "yb": 0.06,
-        },
-        "gamma": 2.2,
-        "decoding gamma": 12/5},
-
-    "HDTV": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.64,   "yr": 0.33,
-            "xg": 0.30,   "yg": 0.60,
-            "xb": 0.15,   "yb": 0.06
-        },
-        "gamma": 2.4,
-        "decoding gamma": 20/9},
-    "ADOBE RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.64,   "yr": 0.33,
-            "xg": 0.21,   "yg": 0.71,
-            "xb": 0.15,   "yb": 0.06,
-        },
-        "gamma": 563/256, # 2.19921875 rounded to 2.2
-        "decoding gamma": 563/256},
-    "M.A.C": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.67,   "yr": 0.33,
-            "xg": 0.21,   "yg": 0.71,
-            "xb": 0.14,   "yb": 0.08
-        },
-        "gamma": 2.8},
-    "NTSC-FCC": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "C",
-        "primaries": {
-            "xr": 0.67,   "yr": 0.33,
-            "xg": 0.21,   "yg": 0.71,
-            "xb": 0.14,   "yb": 0.08
-        },
-        "gamma": 2.5,
-        "decoding gamma": 11/5},
-    "PAL-M": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "C",
-        "primaries": {
-            "xr": 0.67,   "yr": 0.33,
-            "xg": 0.21,   "yg": 0.71,
-            "xb": 0.14,   "yb": 0.08
-        },
-        "gamma": 2.2},
-    "ECI RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.67,   "yr": 0.33,
-            "xg": 0.21,   "yg": 0.71,
-            "xb": 0.14,   "yb": 0.08
-        },
-        "gamma": 1.8,
-        "decoding gamma": 3},
-
-    "DISPLAY P3": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.68,   "yr": 0.32,
-            "xg": 0.265,  "yg": 0.69,
-            "xb": 0.15,   "yb": 0.06
-        },
-        "gamma": 2.2,
-        "decoding gamma": 12/5},
-    "UHDTV": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.708,  "yr": 0.292,
-            "xg": 0.170,  "yg": 0.797,
-            "xb": 0.131,  "yb": 0.046
-        },
-        "gamma": 2.4},
-    "WIDE GAMUT": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.735,  "yr": 0.265,
-            "xg": 0.115,  "yg": 0.826,
-            "xb": 0.157, "yb": 0.018,
-        },
-        "gamma": 2.2,
-        "decoding gamma": 563/256},
-    "RIMM" : {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.7347, "yr": 0.2653,
-            "xg": 0.1596, "yg": 0.8404,
-            "xb": 0.0366, "yb": 0.0001
-        },
-        "gamma": 2.222,
-        "decoding gamma": 20/9},
-
-    "PROPHOTO" : {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.734699, "yr": 0.265301,
-            "xg": 0.159597, "yg": 0.840403,
-            "xb": 0.036598, "yb": 0.000105,
-        },
-        "gamma": 1.8,
-        "decoding gamma": 9/5},
-    "ROMM ": {
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.7347, "yr": 0.2653,
-            "xg": 0.1596, "yg": 0.8404,
-            "xb": 0.0366, "yb": 0.0001
-        },
-        "gamma": 1.8},
-
-    "CIE RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html & https://en.wikipedia.org/wiki/RGB_color_spaces
-        "illuminant": "E",
-        "primaries": {
-            "xr": 0.7347, "yr": 0.2653,
-            "xg": 0.2738, "yg": 0.7174,
-            "xb": 0.1666, "yb": 0.0089,
-        },
-        "gamma": 2.2},
-    "BEST RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.7347, "yr": 0.2653,
-            "xg": 0.215,  "yg": 0.775,
-            "xb": 0.13,   "yb": 0.035,
-        },
-        "gamma": 2.2},
-    "BETA RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.6888, "yr": 0.3112,
-            "xg": 0.1986, "yg": 0.7551,
-            "xb": 0.1265, "yb": 0.0352,
-        },
-        "gamma": 2.2},
-    "BRUCE RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.64,   "yr": 0.33,
-            "xg": 0.28,   "yg": 0.65,
-            "xb": 0.15,   "yb": 0.06,
-        },
-        "gamma": 2.2},
-    "COLORMATCH RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.63,   "yr": 0.34,
-            "xg": 0.295,  "yg": 0.605,
-            "xb": 0.15,   "yb": 0.075,
-        },
-        "gamma": 1.8},
-    "DON RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.696,  "yr": 0.3,
-            "xg": 0.215,  "yg": 0.765,
-            "xb": 0.13,   "yb": 0.035,
-        },
-        "gamma": 2.2},
-    "EKTA SPACE PS5": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D50",
-        "primaries": {
-            "xr": 0.695,  "yr": 0.305,
-            "xg": 0.26,   "yg": 0.7,
-            "xb": 0.11,   "yb": 0.005,
-        },
-        "gamma": 2.2},
-    "SMPTE-C RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.63,   "yr": 0.34,
-            "xg": 0.31,   "yg": 0.595,
-            "xb": 0.155,  "yb": 0.07,
-        },
-        "gamma": 2.2},
-    "REC 2020": {  # Source: http://www.russellcottrell.com/photo/matrixCalculator.htm
-        "illuminant": "D65",
-        "primaries": {
-            "xr": 0.708,   "yr": 0.292,
-            "xg": 0.170,   "yg": 0.797,
-            "xb": 0.131,   "yb": 0.046,
-        },
-        "gamma": 2.4},
-    }
-
 
 #= More info: http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html
 #= More info: https://en.wikipedia.org/wiki/CIELAB_color_space
@@ -287,8 +26,6 @@ color_space_props = {
 CIE_E = 216 / 24389 # 0.008856  # epsilon
 CIE_K = 24389 / 27 # 903.3  # kappa
 KODAK_E = 1/512 # 0.001953 # Actual Kodak standard
-BETA = 0.018053968510807
-ALPHA = 1.09929682680944 // 10 * BETA ** 0.55
 
 # http://brucelindbloom.com/index.html?Eqn_ChromAdapt.html
 # https://ninedegreesbelow.com/photography/srgb-color-space-to-profile.html
@@ -583,11 +320,13 @@ def refine_args(
         color_space = color_space.upper().strip()
 
         # Find the iluminant of the requested color space
-        if rgb_illum := color_space_props.get(color_space):
+        if rgb_illum := cs.get(color_space):
             rgb_illum = rgb_illum["illuminant"]
         else:
+            msg = [i for i in cs if not i.startswith("__")]
+            msg.sort()
             raise ValueError(f'The "{color_space}" color space is not supported! '
-                            f'Please choose one of the following:\n{list(color_space_props)}')
+                            f'Please choose one of the following:\n{msg}')
 
     return (i for i in (illuminant, observer, color_space, adaptation, rgb_illum) if i)
 
@@ -664,13 +403,13 @@ def working_space_matrix(
 
     # It target illuminant isn't specified, assume it's the color space's default illuminant
     if not illuminant:
-        illuminant = color_space_props[color_space]["illuminant"]
+        illuminant = cs[color_space]["illuminant"]
 
     illuminant, observer, color_space, adaptation, rgb_illum = refine_args(
         illuminant=illuminant, observer=observer, color_space=color_space, adaptation=adaptation)
 
     # Get the primary values for the requested color space
-    xr, yr, xg, yg, xb, yb = tuple(color_space_props[color_space]["primaries"].values())
+    xr, yr, xg, yg, xb, yb = tuple(cs[color_space]["primaries"].values())
 
     # Get the reference white for the color space's illuminant at observer 2
     Xw, Yw, Zw = ILLUMINANTS["2"][rgb_illum]

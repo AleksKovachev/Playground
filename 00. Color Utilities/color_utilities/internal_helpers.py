@@ -6,16 +6,18 @@ from . import converters as co
 def check_color(
     color: str | tuple | list,
     depth: int | float = 8,
-    normalized: bool = False) -> tuple[int, int, int] | tuple[float, float, float]:
+    normalized: bool = False,
+    clamp: bool = True) -> tuple[int, int, int] | tuple[float, float, float]:
     """### Checks the type of the color input and returns r, g, b values
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
         `color` (str | tuple | list): String "c0ffee", "#decaff" or a list/tuple (r, g, b)
-                where the values should be either int in range 0-255 or float in range 0-1
-        `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
+                where the values should be either int in range 0-255 or float in range 0-1.
+        `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255).
         `normalized` (bool, optional): Return r, g, b as floats in range 0-1. Defaults to False.
+        `clamp` (bool, optional): Clamps the values in a given range.
 
     ### Returns:
         tuple(r, g, b): r, g, b int in range 0-255 or r, g, b float in range 0-1
@@ -41,10 +43,10 @@ def check_color(
 
     # Check if all R, G, B elements are the same type and in the correct range
     if isinstance(R, int) and isinstance(G, int) and isinstance(B, int):
-        if not (0 <= R <= max_value and 0 <= G <= max_value and 0 <= B <= max_value):
+        if not (0 <= R <= max_value and 0 <= G <= max_value and 0 <= B <= max_value) and clamp:
             raise ValueError(f"{depth}-bit integer types should be in range 0-{max_value}")
     elif isinstance(R, float) and isinstance(G, float) and isinstance(B, float):
-        if not (0 <= R <= 1 and 0 <= G <= 1 and 0 <= B <= 1):
+        if not (0 <= R <= 1 and 0 <= G <= 1 and 0 <= B <= 1) and clamp:
             raise ValueError("Float types should be in range 0-1")
         # Convert to 0-max_value range if not normalized
         return (R, G, B) if normalized else tuple(round(i * max_value) for i in (R, G, B))
@@ -173,14 +175,15 @@ def check_xyz(XYZ, normalized: bool = False, big_float: bool = True):
 
     # Check if all X, Y, Z elements are the same type and in the correct range
     if isinstance(X, int) and isinstance(Y, int) and isinstance(Z, int):
-        if not (0 <= X < 100 and 0 <= Y < 100 and 0 <= Z < 100):
+        if not (0 <= X <= 95 and 0 <= Y <= 100 and 0 <= Z <= 109):
             raise ValueError("Integer types should be in the range 0-100")
     elif isinstance(X, float) and isinstance(Y, float) and isinstance(Z, float):
+        print([f"{i:.20f}" for i in XYZ])
         if big_float:
-            if not (0 <= X < 100 and 0 <= Y < 100 and 0 <= Z < 100):
+            if not (0 <= X <= 95.05 and 0 <= Y <= 100 and 0 <= Z <= 109):
                 raise ValueError("Color should be in the range 0-100")
             return (X/100, Y/100, Z/100) if normalized else (X, Y, Z)
-        if not (0 <= X < 1 and 0 <= Y < 1 and 0 <= Z < 1):
+        if not (0 <= X <= 0.9505 and 0 <= Y <= 1 and 0 <= Z <= 1.09):
             raise ValueError("Float types should be in the range 0-1")
         return (X, Y, Z) if normalized else (X*100, Y*100, Z*100)
     else:
@@ -190,7 +193,7 @@ def check_xyz(XYZ, normalized: bool = False, big_float: bool = True):
     return (X/100, Y/100, Z/100) if normalized else (X, Y, Z)
 
 
-def return_rgb(RGB: tuple | list, output: str, depth: int = 8, normalized_input: bool = False):
+def return_rgb(RGB: tuple | list, output: str, depth: int = 8, clamp: bool = True, normalized_input: bool = False):
     """### Determines what to return based on input parameters
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -199,6 +202,7 @@ def return_rgb(RGB: tuple | list, output: str, depth: int = 8, normalized_input:
         `RGB` (tuple[r, g, b] | list[r, g, b]): The input color
         `output` (str): The desired type of output in: "hex", "hexp", "normalized", "direct" (Any)
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
+        `clamp` (bool, optional): Clamps the values in valid range. Ex. -1 to 0, 262 to 255 for range 0-255. Defaults to Ture.
         `normalized_input` (bool): Whether the R, G, B values are in range 0-1 or the default range 0-255
 
     ### Returns:
@@ -211,6 +215,10 @@ def return_rgb(RGB: tuple | list, output: str, depth: int = 8, normalized_input:
     length = (2 ** depth) - 1
     R, G, B = RGB
 
+    # Clamp the values to a valid range
+    if clamp:
+        R, G, B = (max(min(i, 1.0), 0.0) if normalized_input else max(min(i, 255.0), 0.0) for i in (R, G, B))
+
     # Return desired output type based on input
     match output.lower().strip():
         case "hex" | "hexp":
@@ -221,7 +229,7 @@ def return_rgb(RGB: tuple | list, output: str, depth: int = 8, normalized_input:
             pound_sign = output.lower().strip() == "hexp"
             return co.rgb_to_hex(R, G, B, depth=depth, pound=pound_sign)
         case "round":
-            return (round(R * length), round(G * length), round(B * length)) if normalized_input else (R, G, B)
+            return (round(R * length), round(G * length), round(B * length)) if normalized_input else (round(R), round(G), round(B))
         case "normalized":
             return (R, G, B) if normalized_input else (R / length, G / length, B / length)
         case _:
@@ -242,10 +250,37 @@ def return_hsw(HSW: tuple | list, output, normalized_input: bool = False):
     H, S, W = HSW
     match output.lower():
         case "round":
-            return (round(H * 360), round(S * 100), round(W * 100)) if normalized_input else (round(H), round(S), round(W))
+            return (min(round(H * 360), 359), round(S * 100), round(W * 100)) if normalized_input else (min(round(H), 359), round(S), round(W))
         case "normalized":
             return (H, S, W) if normalized_input else (H / 360, S / 100, W / 100)
         case "half-normalized":
-            return (H * 360, S, W) if normalized_input else (H, S / 100, W / 100)
+            return (min(round(H * 360), 359), S, W) if normalized_input else (min(round(H), 359), S / 100, W / 100)
         case _:
             return (H * 360, S * 100, W * 100) if normalized_input else (H, S, W)
+
+
+def return_scale(vals: tuple | list, output, min_max: tuple | list = (0, 100), clamp: bool = False, normalized_input: bool = False):
+    """### Determines what to return based on input parameters
+
+    ### Args:
+        `HSW` (tuple | list): Hue, Saturation, Wildcard (Either Value, Lightness or Intensity)
+        `output` (str): The desired type of output
+        `normalized_input` (bool): Whether the H, S, W values are in range 0-1 or the default range 0-100
+
+    ### Returns:
+        tuple[h, s, w]
+    """
+    clamp = min_max if clamp else (-9999999999999, 9999999999999)
+
+    match output.lower():
+        case "round":
+            return [max(min(round(i * min_max[1]), clamp[1]), clamp[0]) for i in vals] if normalized_input \
+                else [max(min(round(i), clamp[1]), clamp[0]) for i in vals]
+        case "normalized":
+            if clamp == min_max:
+                clamp = (0, 1) if 0 in min_max else (-1, 1)
+            return [max(min(i, clamp[1]), clamp[0]) for i in vals] if normalized_input \
+                else [max(min(i / min_max[1], clamp[1]), clamp[0]) for i in vals]
+        case _:
+            return [max(min(i * min_max[1], clamp[1]), clamp[0]) for i in vals] if normalized_input \
+                else [max(min(i, clamp[1]), clamp[0]) for i in vals]

@@ -18,7 +18,7 @@ from . import transfer_functions as tf
 #! An override matrix is one rounded by the color space inventor. It's different of the one calculated by any formula.
 #! Display gamma = EOTF
 color_spaces = {
-    "__ACES2065-1": {
+    "ACES2065-1": {
         "illuminant": "ACES",
         "primaries": {
             "xr": 0.7347, "yr":  0.2653,
@@ -26,13 +26,13 @@ color_spaces = {
             "xb": 0.0001, "yb": -0.077,
         },
         "whitepoint": (0.32168, 0.33767),
-        "override_matrix": {
+        "override_matrix": {  # Uses CAT_02 for conversion
             "to_rgb": ((1.04981102, 0.0, -0.00009748), (-0.49590302, 1.37331305, 0.09824004), (0.0, 0.0, 0.99125202)),
             "to_xyz": ((0.9525524, 0.0,  0.00009368), (0.34396645, 0.7281661, -0.07213255), (0.0, 0.0, 1.00882518))
         }, #+ Calculation should be the same as override
-        "gamma": "linear"},
+        "transfer function": lambda x: x},  # http://j.mp/TB-2014-004
 
-    "__ACEScc": {
+    "ACEScc": {
         "illuminant": "ACES",
         "primaries": {
             "xr": 0.713, "yr": 0.293,
@@ -40,13 +40,13 @@ color_spaces = {
             "xb": 0.128, "yb": 0.044,
         },
         "whitepoint": (0.32168, 0.33767),
-        "override_matrix": {
+        "override_matrix": {  # Uses CAT_02 for conversion
             "to_rgb": ((1.64102338, -0.32480329, -0.2364247), (-0.66366286, 1.61533159, 0.01675635), (0.01172189, -0.00828444, 0.98839486)),
             "to_xyz": ((0.66245418, 0.13400421, 0.15618769), (0.27222872, 0.67408177, 0.05368952), (-0.00557465, 0.00406073, 1.0103391))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.acescc},
 
-    "__ACEScct": {
+    "ACEScct": {
         "illuminant": "ACES",
         "primaries": {
             "xr": 0.713, "yr": 0.293,
@@ -54,13 +54,13 @@ color_spaces = {
             "xb": 0.128, "yb": 0.044,
         },
         "whitepoint": (0.32168, 0.33767),
-        "override_matrix": {
+        "override_matrix": {  # Uses CAT_02 for conversion
             "to_rgb": ((1.64102338, -0.32480329, -0.2364247), (-0.66366286, 1.61533159, 0.01675635), (0.01172189, -0.00828444, 0.98839486)),
             "to_xyz": ((0.66245418, 0.13400421, 0.15618769), (0.27222872, 0.67408177, 0.05368952), (-0.00557465, 0.00406073, 1.0103391))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.acescct},
 
-    "__ACEScg": {
+    "ACEScg": {
         "illuminant": "",
         "primaries": {
             "xr": 0.713, "yr": 0.293,
@@ -68,13 +68,13 @@ color_spaces = {
             "xb": 0.128, "yb": 0.044,
         },
         "whitepoint": (0.32168, 0.33767),
-        "override_matrix": {
+        "override_matrix": {  # Uses CAT_02 for conversion
             "to_rgb": ((1.64102338, -0.32480329, -0.2364247), (-0.66366286, 1.61533159, 0.01675635), (0.01172189, -0.00828444, 0.98839486)),
             "to_xyz": ((0.66245418, 0.13400421, 0.15618769), (0.27222872, 0.67408177, 0.05368952), (-0.00557465, 0.00406073, 1.0103391))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": lambda x: x},  # http://j.mp/S-2014-004
 
-    "__ACESproxy": {
+    "ACESproxy": {
         "illuminant": "ACES",
         "primaries": {
             "xr": 0.713, "yr": 0.293,
@@ -82,13 +82,13 @@ color_spaces = {
             "xb": 0.128, "yb": 0.044,
         },
         "whitepoint": (0.32168, 0.33767),
-        "override_matrix": {
+        "override_matrix": {  # Uses CAT_02 for conversion
             "to_rgb": ((1.64102338, -0.32480329, -0.2364247), (-0.66366286, 1.61533159, 0.01675635), (0.01172189, -0.00828444, 0.98839486)),
             "to_xyz": ((0.66245418, 0.13400421, 0.15618769), (0.27222872, 0.67408177, 0.05368952), (-0.00557465, 0.00406073, 1.0103391))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.acesproxy},
 
-    "__ARRI WIDE GAMUT 3": {
+    "ARRI WIDE GAMUT 3": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.684,  "yr":  0.313,
@@ -98,11 +98,12 @@ color_spaces = {
         "whitepoint": (0.3127, 0.329),
         "override_matrix": {
             "to_rgb": ((1.789066, -0.482534, -0.200076), (-0.639849, 1.3964, 0.194432), (-0.041532, 0.082335, 0.878868)),
-            "to_xyz": ((0.638008, 0.214704, 0.097744), (0.291954, 0.823841, -0.115795), (0.002798, -0.067034, 1.153294))
+            "to_xyz": ((0.638008, 0.214704, 0.097744), (0.291954, 0.823841, -0.115795), (0.002798, -0.067034, 1.153294)),
+            "to_aces": ((0.680205, 0.236137, 0.083658), (0.085415, 1.017471, -0.102886), (0.002057, -0.062563, 1.060506))
         }, #+ Actual override matrix
-        "gamma": "Unknown"},
+        "transfer function": tf.arri_log_c3},
 
-    "__ARRI WIDE GAMUT 4": {
+    "ARRI WIDE GAMUT 4": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.7347, "yr":  0.2653,
@@ -110,11 +111,16 @@ color_spaces = {
             "xb": 0.0991, "yb": -0.0308,
         },
         "whitepoint": (0.3127, 0.329),
-        "override_matrix": {
+        "override_matrix": { # Uses CAT_02 for conversion
             "to_rgb": ((1.50921547, -0.25059735, -0.16881148), (-0.49154545, 1.36124555, 0.09728294), (0.0, 0.0, 0.91822495)),
-            "to_xyz": ((0.70485832, 0.1297603, 0.11583731), (0.25452418, 0.78147773, -0.03600191), (0.0, 0.0, 1.08905775))
+            "to_xyz": ((0.704858320407232064, 0.129760295170463003, 0.115837311473976537),
+                        (0.254524176404027025, 0.781477732712002049, -0.036001909116029039),
+                        (0.0, 0.0, 1.089057750759878429)),
+            "aces_to": ((0.750957362824734131, 0.144422786709757084, 0.104619850465508965),
+                        (0.000821837079380207, 1.007397584885003194, -0.008219421964383583),
+                        (-0.000499952143533471, -0.000854177231436971, 1.001354129374970370))
         }, #+ Actual override matrix
-        "gamma": "Unknown"},
+        "transfer function": tf.arri_log_c4},
 
     "ADOBE RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
         "illuminant": "D65",
@@ -224,7 +230,7 @@ color_spaces = {
         }, #+ Calculation should be the same as override
         "transfer function": partial(tf.gamma_function, gamma=2.2)},
 
-    "__CINEMA GAMUT": {
+    "CINEMA GAMUT": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.74, "yr":  0.27,
@@ -236,7 +242,7 @@ color_spaces = {
             "to_rgb": ((1.48981827, -0.2608959, -0.14242652), (-0.45816657, 1.26162778, 0.15962363), (-0.07034967, 0.22155767, 0.7761816)),
             "to_xyz": ((0.71604965, 0.12968348, 0.1047228), (0.26126136, 0.86964215, -0.1309035), (-0.00967635, -0.23648164, 1.33521573))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": lambda x: x},
 
     "COLORMATCH RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
         "illuminant": "D50",
@@ -278,9 +284,9 @@ color_spaces = {
             "to_rgb": ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
             "to_xyz": ((1, 0, 0), (0, 1, 0), (0, 0, 1))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.dcdm},  #TODO Implement in XYZ functions that this works with tristimulus rathar than RGB values
 
-    "__DCI-P3": {
+    "DCI-P3": {
         "illuminant": "DCI-P3", # or either D65: https://www.color.org/chardata/rgb/DCIP3.xalter (changes the white point too)
         "primaries": {
             "xr": 0.68,  "yr": 0.32,
@@ -292,9 +298,9 @@ color_spaces = {
             "to_rgb": ((2.72539403, -1.01800301, -0.4401632), (-0.79516803, 1.68973205, 0.02264719), (0.04124189, -0.08763902, 1.10092938)),
             "to_xyz": ((0.44516982, 0.27713441, 0.17228267), (0.20949168, 0.72159525, 0.06891307), (-0, 0.04706056, 0.90735539))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": partial(tf.gamma_function, gamma=2.6)},
 
-    "__DCI-P3-P": {
+    "DCI-P3-P": {
         "illuminant": "DCI-P3",
         "primaries": {
             "xr": 0.74, "yr":  0.27,
@@ -306,9 +312,9 @@ color_spaces = {
             "to_rgb": ((1.99040349, -0.56139586, -0.22966194), (-0.45849279, 1.262346, 0.15487549), (0.01563207, -0.00440904, 1.03772867)),
             "to_xyz": ((0.55907356, 0.24893595, 0.08657739), (0.2039863, 0.88259109, -0.08657739), (-0.00755505, 0, 0.961971))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": partial(tf.gamma_function, gamma=2.6)},
 
-    "__DJI D-GAMUT": {
+    "DJI D-GAMUT": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.71, "yr":  0.31,
@@ -318,9 +324,11 @@ color_spaces = {
         "whitepoint": (0.3127, 0.329),
         "override_matrix": {
             "to_rgb": ((1.7257, -0.4314, -0.1917), (-0.6025, 1.3906, 0.1671), (-0.0156, 0.0905, 0.8489)),
-            "to_xyz": ((0.6482, 0.194, 0.1082), (0.283, 0.8132, -0.0962), (-0.0183, -0.0832, 1.1903))
+            "to_xyz": ((0.6482, 0.194, 0.1082), (0.283, 0.8132, -0.0962), (-0.0183, -0.0832, 1.1903)),
+            "d_to_rec709": ((1.6746, -0.5797, -0.0949), (-0.0981, 1.3340, -0.2359), (-0.0410, -0.2430, 1.2840)),
+            "rec709_to_d": ((0.6163, 0.2857, 0.0980), (0.0505, 0.7990, 0.1505), (0.0292, 0.1604, 0.8104))
         }, #+ Actual override matrix
-        "gamma": "Unknown"},
+        "transfer function": tf.djidlog},
 
     "DISPLAY P3": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
         "illuminant": "D65",
@@ -350,7 +358,7 @@ color_spaces = {
         }, #+ Calculation should be the same as override
         "transfer function": partial(tf.gamma_function, gamma=2.2)},
 
-    "__DRAGONCOLOR": {
+    "DRAGONCOLOR": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.75865589, "yr":  0.33035535,
@@ -362,9 +370,9 @@ color_spaces = {
             "to_rgb": ((2.41407671, -1.00664042, -0.26429553), (-0.61715986, 1.45087355, 0.12461203), (0.12073206, -0.04669048, 0.85573054)),
             "to_xyz": ((0.49831915, 0.34905932, 0.10307746), (0.21699218, 0.83802234, -0.05501452), (-0.05846657, -0.00352329, 1.15104761))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.red_log_film},
 
-    "__DRAGONCOLOR2": {
+    "DRAGONCOLOR2": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.75865621, "yr": 0.33035584,
@@ -376,9 +384,9 @@ color_spaces = {
             "to_rgb": ((2.72655873, -1.13744045, -0.41690486), (-0.71770143, 1.654923, 0.02499461), (0.12073281, -0.04669036, 0.85572978)),
             "to_xyz": ((0.43856251, 0.30720212, 0.2046913), (0.19097146, 0.73753094, 0.0714976), (-0.05145591, -0.0031012, 1.14361486))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.red_log_film},
 
-    "__EBU TECH. 3213-E": {
+    "EBU TECH. 3213-E": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.64, "yr": 0.33,
@@ -390,22 +398,23 @@ color_spaces = {
             "to_rgb": ((3.05350675, -1.38890786, -0.47429309), (-0.97013781, 1.87769818, 0.04159339), (0.06792306, -0.22900835, 1.07006656)),
             "to_xyz": ((0.43194331, 0.341235, 0.17818948), (0.22272077, 0.70600344, 0.07127579), (0.02024734, 0.12943396, 0.93846459))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": lambda x: x},
 
     "ECI RGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
         "illuminant": "D50",
         "primaries": {
-            "xr": 0.67, "yr": 0.33,
-            "xg": 0.21, "yg": 0.71,
-            "xb": 0.14, "yb": 0.08
+            "xr": 0.670103092783505, "yr": 0.329896907216495,
+            "xg": 0.209905660377358, "yg": 0.709905660377358,
+            "xb": 0.140061791967044, "yb": 0.080329557157570
         },
         "whitepoint": (0.3457, 0.3585),
         "override_matrix": {
             "to_rgb": ((1.78215602, -0.49656317, -0.26901095), (-0.95923427, 1.94844461, -0.02843173), (0.08612755, -0.17494658, 1.32334029)),
-            "to_xyz": ((0.65032438, 0.177949, 0.13602229), (0.3201597, 0.60182752, 0.07801279), (0, 0.06798052, 0.75712409))
+            "to_xyz": ((0.65032438, 0.177949, 0.13602229), (0.3201597, 0.60182752, 0.07801279), (0, 0.06798052, 0.75712409)),
+            # For D50, XYZ are normalized Y=1, RGB values outside 0-1 range are clipped. RGB = i**(1/1.8) for i in ReGeBe
+            "d50_to_regebe": ((1.8951, -0.5943, -0.2824), (-0.9666, 1.9783, -0.0561), (0.0768, -0.1523, 1.3072))
         }, #+ Calculation should be the same as override
-        "gamma": 1.8,
-        "decoding gamma": 3},
+        "transfer function": tf.eci},
 
     "EKTA SPACE PS 5": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
         "illuminant": "D50",
@@ -435,7 +444,7 @@ color_spaces = {
         }, #+ Actual override matrix
         "transfer function": tf.erimm},
 
-    "__F-GAMUT": {  #~ FUJI
+    "F-GAMUT": {  #~ FUJI
         "illuminant": "D65",
         "primaries": {
             "xr": 0.708, "yr": 0.292,
@@ -447,9 +456,9 @@ color_spaces = {
             "to_rgb": ((1.71665119, -0.35567078, -0.25336628), (-0.66668435, 1.61648124, 0.01576855), (0.01763986, -0.04277061, 0.94210312)),
             "to_xyz": ((0.63695805, 0.1446169, 0.16888098), (0.26270021, 0.67799807, 0.05930172), (0, 0.02807269, 1.06098506))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.flog},
 
-    "__FILMLIGHT E-GAMUT": {
+    "FILMLIGHT E-GAMUT": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.8,   "yr":  0.3177,
@@ -461,9 +470,9 @@ color_spaces = {
             "to_rgb": ((1.52505277, -0.31591351, -0.12265826), (-0.50915256, 1.33332741, 0.13828437), (0.09571535, 0.05089744, 0.78795577)),
             "to_xyz": ((0.70539685, 0.16404133, 0.08101775), (0.28013072, 0.82020664, -0.10033737), (-0.10378151, -0.07290726, 1.26574652))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.filmlighttlog},
 
-    "__ITU-T H.273 - 22 Unspecified": {
+    "ITU-T H.273 - 22 Unspecified": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.63,  "yr": 0.34,
@@ -475,9 +484,9 @@ color_spaces = {
             "to_rgb": ((3.13288278, -1.44707454, -0.48720324), (-1.08850877, 2.01538781, 0.01762239), (0.05941301, -0.20297883, 1.05275352)),
             "to_xyz": ((0.42942013, 0.3277917, 0.1932441), (0.23175055, 0.67225077, 0.09599868), (0.02044858, 0.11111583, 0.95749334))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": lambda x: x},
 
-    "__ITU-T H.273 - GENERIC FILM": {
+    "ITU-T H.273 - GENERIC FILM": {
         "illuminant": "C",
         "primaries": {
             "xr": 0.681, "yr": 0.319,
@@ -489,7 +498,7 @@ color_spaces = {
             "to_rgb": ((2.19248548, -0.73706449, -0.34962064), (-0.82433417, 1.75978548, 0.04131385), (0.04690337, -0.10012914, 0.89064375)),
             "to_xyz": ((0.54135308, 0.23820172, 0.20145785), (0.25358536, 0.67833578, 0.06807886), (-0, 0.06371651, 1.11982779))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": lambda x: x},
 
     "M.A.C": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces | https://en.wikipedia.org/wiki/Multiplexed_Analogue_Components
         "illuminant": "D65",
@@ -501,7 +510,7 @@ color_spaces = {
         "whitepoint": (0.313, 0.329),
         "transfer function": tf.rec601},  # gamma = 2.8
 
-    "__MAX RGB": {
+    "MAX RGB": {
         "illuminant": "D50",
         "primaries": {
             "xr": 0.73413379, "yr": 0.26586621,
@@ -513,9 +522,9 @@ color_spaces = {
             "to_rgb": ((1.2169928, -0.13580933, -0.04572942), (-0.54704638, 1.51055387, 0.02055568), (0, 0, 1.21196755)),
             "to_xyz": ((0.85630404, 0.07698771, 0.03100393), (0.31011011, 0.68988989, 0), (0, 0, 0.8251046))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": partial(tf.gamma_function, gamma=2.2)},
 
-    "__N-GAMUT": {  #~ NIKON
+    "N-GAMUT": {  #~ NIKON
         "illuminant": "D65",
         "primaries": {
             "xr": 0.708, "yr": 0.292,
@@ -527,7 +536,7 @@ color_spaces = {
             "to_rgb": ((1.71665119, -0.35567078, -0.25336628), (-0.66668435, 1.61648124, 0.01576855), (0.01763986, -0.04277061, 0.94210312)),
             "to_xyz": ((0.63695805, 0.1446169, 0.16888098), (0.26270021, 0.67799807, 0.05930172), (0, 0.02807269, 1.06098506))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.nlog},
 
     "NTSC (1953)": {
         "illuminant": "C", # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html , https://en.wikipedia.org/wiki/RGB_color_spaces
@@ -557,7 +566,7 @@ color_spaces = {
         }, #+ Calculation should be the same as override
         "transfer function": partial(tf.gamma_function, gamma=2.2)},
 
-    "__P3-D65": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
+    "P3-D65": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
         "illuminant": "D65",
         "primaries": {
             "xr": 0.68,  "yr": 0.32,
@@ -569,7 +578,7 @@ color_spaces = {
             "to_rgb": ((2.49349691, -0.93138362, -0.40271078), (-0.82948897, 1.76266406, 0.02362469), (0.03584583, -0.07617239, 0.95688452)),
             "to_xyz": ((0.48657095, 0.26566769, 0.19821729), (0.22897456, 0.69173852, 0.07928691), (-0, 0.04511338, 1.04394437))
         }, #+ Calculation should be the same as override
-        "gamma": 2.6},
+        "transfer function": partial(tf.gamma_function, gamma=2.6)},
 
     "PAL": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html
         "illuminant": "D65",  # Source: https://www.color.org/chardata/rgb/bt601.xalter | https://en.wikipedia.org/wiki/RGB_color_spaces
@@ -599,7 +608,7 @@ color_spaces = {
         }, #+ Actual override matrix
         "transfer function": tf.romm},  # gamma = 1.8
 
-    "__PROTUNE NATIVE": {
+    "PROTUNE NATIVE": {  #~ GoPro
         "illuminant": "D65",
         "primaries": {
             "xr": 0.69848046, "yr":  0.19302645,
@@ -611,7 +620,7 @@ color_spaces = {
             "to_rgb": ((2.2668965, -0.83163359, -0.29654225), (-0.35733783, 1.24337315, 0.08838899), (-0.21823445, 0.34417515, 0.79265501)),
             "to_xyz": ((0.50225719, 0.29296671, 0.15523203), (0.13879976, 0.91084146, -0.04964122), (0.07801426, -0.31483251, 1.325876))
         },#+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.protune},
 
     "REC. 601 - 525": {
         "illuminant": "D65",    # Source: https://www.color.org/chardata/rgb/bt601.xalter
@@ -668,7 +677,7 @@ color_spaces = {
                         # (HLG).[3] HLG is supported in Rec. 2100 with a nominal peak luminance of 1,000 cd/m2 and a system gamma value
                         # that can be adjusted depending on background luminance.
 
-    "__REDCOLOR": {
+    "REDCOLOR": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.70105856, "yr": 0.33018098,
@@ -680,9 +689,9 @@ color_spaces = {
             "to_rgb": ((2.99433635, -1.37906534, -0.42873703), (-0.79472663, 1.69283865, 0.0574019), (0.12764085, -0.17911636, 0.97129776)),
             "to_xyz": ((0.42302331, 0.36210731, 0.16532531), (0.19923335, 0.75759632, 0.04317033), (-0.01885014, 0.09212233, 1.01578557))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.red_log_film},
 
-    "__REDCOLOR2": {
+    "REDCOLOR2": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.89740722, "yr":  0.33077623,
@@ -694,9 +703,9 @@ color_spaces = {
             "to_rgb": ((2.55060735, -1.09426927, -0.30298724), (-0.48063394, 1.36324834, 0.0859211), (0.2572561, -0.13431523, 0.81704083)),
             "to_xyz": ((0.44957762, 0.3734296, 0.12744871), (0.16571026, 0.86366248, -0.02937275), (-0.11431396, 0.02440023, 1.17897148))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.red_log_film},
 
-    "__REDCOLOR3": {
+    "REDCOLOR3": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.70259866, "yr":  0.33018559,
@@ -708,9 +717,9 @@ color_spaces = {
             "to_rgb": ((2.58673915, -1.10240102, -0.32705386), (-0.74762558, 1.6008681, 0.10074495), (0.06405867, -0.04645456, 0.90497461)),
             "to_xyz": ((0.47986312, 0.33439883, 0.13619398), (0.22551123, 0.77980008, -0.00531131), (-0.02239109, 0.01635861, 1.09509023))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.red_log_film},
 
-    "__REDCOLOR4": {
+    "REDCOLOR4": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.70259815, "yr": 0.3301851,
@@ -722,9 +731,9 @@ color_spaces = {
             "to_rgb": ((2.58673915, -1.10240102, -0.32705386), (-0.74762558, 1.6008681, 0.10074495), (0.06405867, -0.04645456, 0.90497461)),
             "to_xyz": ((0.44431783, 0.30962925, 0.19650885), (0.20880659, 0.72203852, 0.06915489), (-0.02073188, 0.0151468, 1.09464284))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.red_log_film},
 
-    "__REDWIDEGAMUTRGB": {
+    "REDWIDEGAMUTRGB": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.780308, "yr":  0.304253,
@@ -734,9 +743,15 @@ color_spaces = {
         "whitepoint": (0.3127, 0.329),
         "override_matrix": {
             "to_rgb": ((1.41280661, -0.17752237, -0.15177038), (-0.48620319, 1.29069621, 0.15740028), (-0.03713878, 0.28637576, 0.68767961)),
-            "to_xyz": ((0.735275, 0.068609, 0.146571), (0.286694, 0.842979, -0.129673), (-0.079681, -0.347343, 1.516082))
+            "to_xyz": ((0.735275, 0.068609, 0.146571), (0.286694, 0.842979, -0.129673), (-0.079681, -0.347343, 1.516082)),
+            "rwg_to_aces_ap0": ((0.785043, 0.083844, 0.131118), (0.023172, 1.087892, -0.111055), (-0.073769, -0.314639, 1.388537)),
+            "aces_ap0_to_rwg": ((1.265561, -0.135228, -0.130321), (-0.020568, 0.943172, 0.077377), (0.062575, 0.206536, 0.730792)),
+            "rwg_to_rec709": ((1.981880, -0.900388, -0.081540), (-0.178143, 1.500467, -0.322325), (-0.101811, -0.535343, 1.637304)),
+            "rec709_to_rwg": ((0.541973, 0.360148, 0.097891), (0.076993, 0.767969, 0.155019), (0.058875, 0.273495, 0.667533)),
+            "rwg_to_rec2020": ((1.180431, -0.094040, -0.086391), (-0.028017, 1.311442, -0.283425), (-0.074360, -0.362078, 1.436437)),
+            "rec2020_to_rwg": ((0.853263, 0.079695, 0.067042), (0.029375, 0.809195, 0.161430), (0.051575, 0.208097, 0.740329))
         },  #+ Actual override matrix
-        "gamma": "Unknown"},
+        "transfer function": tf.log3_g10},
 
     "RIMM": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces
         "illuminant": "D50",
@@ -752,7 +767,7 @@ color_spaces = {
         },  #+ Actual override matrix
         "transfer function": tf.rimm},  # gamma =  2.222 | 20/9
 
-    "__RUSSELL RGB": {
+    "RUSSELL RGB": {
         "illuminant": "D55",
         "primaries": {
             "xr": 0.69, "yr": 0.31,
@@ -764,9 +779,9 @@ color_spaces = {
             "to_rgb": ((1.58699918, -0.35980738, -0.17216338), (-0.75352154, 1.67719311, 0.04750942), (0.03704107, -0.08244626, 1.13632451)),
             "to_xyz": ((0.70158375, 0.15541622, 0.09979833), (0.31520429, 0.66483604, 0.01995967), (0, 0.04317117, 0.87822533))
         },  #+ Actual override matrix
-        "gamma": 2.2},
+        "transfer function": partial(tf.gamma_function, gamma=2.2)},
 
-    "__S-GAMUT": {  #~ SONY
+    "S-GAMUT": {  #~ SONY
         "illuminant": "D65",
         "primaries": {
             "xr": 0.73, "yr":  0.28,
@@ -778,9 +793,9 @@ color_spaces = {
             "to_rgb": ((1.5073999, -0.24582214, -0.17161168), (-0.51815173, 1.35539124, 0.12587867), (0.0155117, -0.00787277, 0.91191637)),
             "to_xyz": ((0.70648271, 0.12880105, 0.11517216), (0.27097967, 0.78660641, -0.05758608), (-0.00967785, 0.00460004, 1.09413556))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.slog2},
 
-    "__S-GAMUT3": {  #~ SONY
+    "S-GAMUT3": {  #~ SONY
         "illuminant": "D65",
         "primaries": {
             "xr": 0.73, "yr":  0.28,
@@ -792,9 +807,9 @@ color_spaces = {
             "to_rgb": ((1.5073999, -0.24582214, -0.17161168), (-0.51815173, 1.35539124, 0.12587867), (0.0155117, -0.00787277, 0.91191637)),
             "to_xyz": ((0.70648271, 0.12880105, 0.11517216), (0.27097967, 0.78660641, -0.05758608), (-0.00967785, 0.00460004, 1.09413556))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.slog3},
 
-    "__S-GAMUT3.CINE": {  #~ SONY
+    "S-GAMUT3.CINE": {  #~ SONY
         "illuminant": "D65",
         "primaries": {
             "xr": 0.766, "yr":  0.275,
@@ -806,7 +821,7 @@ color_spaces = {
             "to_rgb": ((1.84677897, -0.52598612, -0.21054521), (-0.44415326, 1.2594429, 0.14939997), (0.04085542, 0.01564089, 0.86820725)),
             "to_xyz": ((0.59908392, 0.24892552, 0.10244649), (0.21507582, 0.8850685, -0.10014432), (-0.03206585, -0.02765839, 1.14878199))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.slog3},
 
     "__SCRGB": {  # Source: https://en.wikipedia.org/wiki/RGB_color_spaces , https://en.wikipedia.org/wiki/ScRGB
         "illuminant": "D65",
@@ -817,7 +832,7 @@ color_spaces = {
         },                          # 5x + 1024 sRGB color = 12bit scRGB color, 12bit uses sRGB OETF for positive and
         "gamma": 2.2},  # 12/5      # -f(-x), then converted by 1280x + 1024 for negative values
 
-    "__SHARP RGB": {
+    "SHARP RGB": {
         "illuminant": "E",
         "primaries": {
             "xr": 0.6898, "yr": 0.3206,
@@ -829,9 +844,9 @@ color_spaces = {
             "to_rgb": ((1.26941888, -0.09883024, -0.17058864), (-0.83638581, 1.80071706, 0.03566876), (0.02973006, -0.03147126, 1.0017412)),
             "to_xyz": ((0.8156226, 0.0471626, 0.1372148), (0.37907887, 0.57690884, 0.04401229), (-0.01229701, 0.01672478, 0.99557223))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": lambda x: x},
 
-    "__SMPTE 240M": {
+    "SMPTE 240M": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.63,  "yr": 0.34,
@@ -843,7 +858,7 @@ color_spaces = {
             "to_rgb": ((3.50600328, -1.73979073, -0.54405827), (-1.06904756, 1.97777888, 0.03517142), (0.05630659, -0.19697565, 1.04995233)),
             "to_xyz": ((0.3935209, 0.36525808, 0.19167695), (0.21237636, 0.70105986, 0.08656378), (0.01873909, 0.11193393, 0.95838473))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.smpte240m},
 
     "SRGB": {  # Source: http://brucelindbloom.com/index.html?WorkingSpaceInfo.html & https://en.wikipedia.org/wiki/RGB_color_spaces
         "illuminant": "D65",
@@ -859,7 +874,7 @@ color_spaces = {
         },  #+ Actual override matrix
         "transfer function": tf.srgb},  # The gamma is ~2.2 but the calculations are made using 2.4 due to old standards
 
-    "__V-GAMUT": {  #~ PANASONIC
+    "V-GAMUT": {  #~ PANASONIC
         "illuminant": "D65",
         "primaries": {
             "xr": 0.73,  "yr":  0.28,
@@ -871,9 +886,9 @@ color_spaces = {
             "to_rgb": ((1.589012, -0.313204, -0.180965), (-0.534053, 1.396011, 0.102458), (0.011179, 0.003194, 0.905535)),
             "to_xyz": ((0.679644, 0.152211, 0.1186), (0.260686, 0.774894, -0.03558), (-0.00931, -0.004612, 1.10298))
         },  #+ Actual override matrix
-        "gamma": "Unknown"},
+        "transfer function": tf.vlog},
 
-    "__VENICE S-GAMUT3": {
+    "VENICE S-GAMUT3": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.74046426, "yr":  0.27936437,
@@ -885,9 +900,9 @@ color_spaces = {
             "to_rgb": ((1.39026398, -0.13557353, -0.17061639), (-0.49777193, 1.32876782, 0.13253885), (0.03205319, -0.02043803, 0.9090178)),
             "to_xyz": ((0.74422299, 0.07790652, 0.12832642), (0.28078248, 0.78028572, -0.0610682), (-0.01992929, 0.01479657, 1.09419047))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.slog3},
 
-    "__VENICE S-GAMUT3.CINE": {
+    "VENICE S-GAMUT3.CINE": {
         "illuminant": "D65",
         "primaries": {
             "xr": 0.77590187, "yr":  0.27450239,
@@ -899,7 +914,7 @@ color_spaces = {
             "to_rgb": ((1.70701129, -0.39308248, -0.21060088), (-0.42750858, 1.23694441, 0.1555323), (0.05417788, 0.00580601, 0.86561094)),
             "to_xyz": ((0.63226084, 0.20037001, 0.11782508), (0.22368436, 0.88001406, -0.10369842), (-0.04107303, -0.01844361, 1.14857439))
         }, #+ Calculation should be the same as override
-        "gamma": "Unknown"},
+        "transfer function": tf.slog3},
 
     "XTREME RGB": {
         "illuminant": "D50",
@@ -919,8 +934,8 @@ color_spaces = {
 #! https://stackoverflow.com/questions/2974022/is-it-possible-to-assign-the-same-value-to-multiple-keys-in-a-dict-object-at-onc
 color_spaces.update(
     {
-        "__ACES": color_spaces["__ACES2065-1"],
-        "__ALEXA WIDE GAMUT": color_spaces["__ARRI WIDE GAMUT 3"],
+        "ACES": color_spaces["ACES2065-1"],
+        "ALEXA WIDE GAMUT": color_spaces["ARRI WIDE GAMUT 3"],
         "ADOBE": color_spaces["ADOBE RGB"],
         "ADOBE 1998": color_spaces["ADOBE RGB"],
         "ADOBE1998": color_spaces["ADOBE RGB"],
@@ -947,6 +962,8 @@ color_spaces.update(
         "ITU-R BT.470-6": color_spaces["PAL"],
         "ITU-R BT.470 - 625": color_spaces["PAL"],
         "PROPHOTO RGB": color_spaces["PROPHOTO"],
+        "ROMM": color_spaces["PROPHOTO"],
+        "ROMM RGB": color_spaces["PROPHOTO"],
         "REC.601 - 525": color_spaces["REC. 601 - 525"],
         "BT.601 - 525": color_spaces["REC. 601 - 525"],
         "BT. 601 - 525": color_spaces["REC. 601 - 525"],
@@ -964,6 +981,5 @@ color_spaces.update(
         "ITU-R BT.2020": color_spaces["REC. 2020"],
         "__BT.2100": color_spaces["__REC. 2100"],
         "__ITU-R BT.2100": color_spaces["__REC. 2100"],
-        "ROMM": color_spaces["PROPHOTO"],
     }
 )

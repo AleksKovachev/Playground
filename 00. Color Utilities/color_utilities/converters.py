@@ -10,7 +10,7 @@ from .color_spaces import color_spaces as cs
 
 
 def rgb_to_web_safe(*color, output: str = "round"):
-    """### Converts an R, G, B color to its web safe version
+    """### Converts an 8-bit RGB color to its web safe version
 
     ### Args:
         `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
@@ -24,7 +24,7 @@ def rgb_to_web_safe(*color, output: str = "round"):
         *     In any invalid case the "direct" approach will be used
 
     ### Returns:
-
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     # Check color integrity
     R, G, B = ih.check_color(color, normalized=True)
@@ -40,12 +40,12 @@ def hex_to_rgb(color: str, *, depth: int | float = 8, normalized: bool = False) 
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (str): A hex color in the form "c0ffee" or "#decaff"
+        `color` (str): A hex color in the form "dec0de" or "#0ff1ce"
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `normalized` (bool, optional): True will return values in range 0-1. Defaults to False.
 
     ### Returns:
-        list: (R, G, B) either in range 0-1 or 0-255
+        list[int, int, int] | list[float, float, float]: Red, Green, Blue
     """
     max_value = (2 ** depth) - 1   # The number of possible values per channel for the given bit depth
     # Length of the stringified hexadecimal representation of the max possible value for an RGB element
@@ -66,14 +66,14 @@ def rgb_to_hex(*color: int | float | tuple | list | str, depth: int | float = 8,
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "dec0de", "#0ff1ce", consecutive values either
+        `color` (int | float | str | tuple | list): String "decade", "#facade", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
             N/B: If a color is passed as a hex in a string form, the result will be the same string
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
-        `pound` (bool): Wether to return the result with a pound sign prefix "#decade" instead of just "facade"
+        `pound` (bool): Wether to return the result with a pound sign prefix "#c0ffed" instead of just "dec1de"
 
     ### Returns:
-        str: Hex string in either `c0ffed` | `#dec1de` form
+        str: Hex string in either `add1c7` | `#effec7` form
     """
     # Check color integrity
     R, G, B = ih.check_color(color, depth=depth)
@@ -91,13 +91,13 @@ def rgb_to_hex(*color: int | float | tuple | list | str, depth: int | float = 8,
     return f"{pound_sign}{hexed}"
 
 
-def rgb_to_hsl(*color: int | float | str | tuple | list, depth: int = 8, output: str = "round") -> tuple:
+def rgb_to_hsl(*color: int | float | str | tuple | list, depth: int = 8, output: str = "round"):
     """### Takes an RGB color and returns its HSL (Hue, Saturation, Luminance) representation
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "add1c7", "#effec7", consecutive values either
+        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "normalized", "half-normalized", "round" or "direct"
@@ -110,7 +110,7 @@ def rgb_to_hsl(*color: int | float | str | tuple | list, depth: int = 8, output:
     #### N/B: Don't use round output if the output color is going to be used to further conversion!
 
     ### Returns:
-        tuple: (H, S, L)
+        tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]: Hue, Saturation, Lightness
     """
     # Check color integrity
     R, G, B = ih.check_color(color, normalized=True, depth=depth)
@@ -147,13 +147,13 @@ def rgb_to_hsl(*color: int | float | str | tuple | list, depth: int = 8, output:
             return H * 360, S * 100, L * 100
 
 
-def rgb_to_hls(*color: int | float | str | tuple | list, depth: int = 8, output: str = "round") -> tuple:
+def rgb_to_hls(*color: int | float | str | tuple | list, depth: int = 8, output: str = "round"):
     """### Takes an RGB color and returns its HLS (Hue, Luminance, Saturation) representation
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+        `color` (int | float | str | tuple | list): String "dec0de", "#0ff1ce", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
 
@@ -167,7 +167,7 @@ def rgb_to_hls(*color: int | float | str | tuple | list, depth: int = 8, output:
     #### N/B: Don't use round output if the output color is going to be used to further conversion!
 
     ### Returns:
-        tuple: (H, L, S)
+        tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]: Hue, Lightness,  Saturation
     """
     RGB = ih.check_color(color, normalized=True, depth=depth)
 
@@ -237,7 +237,7 @@ def hls_to_rgb(*HLS: int | float | tuple | list, depth: int = 8, output="round")
     #### N/B: Don't use round if the output color is going to be used to further conversion!
 
     ### Returns:
-        str | tuple[int, int, int] | tuple[float, float, float]: RGB
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     if depth % 1 != 0:
         raise ValueError("Depth value must be an integer number passed either as int or float")
@@ -266,7 +266,7 @@ def hls_to_rgb(*HLS: int | float | tuple | list, depth: int = 8, output="round")
     return ih.return_rgb((res), normalized_input=True, depth=depth, output=output)
 
 
-def hsl_to_rgb(*HSL: int | float | tuple | list, depth: int = 8, output: str = "round") -> tuple[int, int, int]:
+def hsl_to_rgb(*HSL: int | float | tuple | list, depth: int = 8, output: str = "round"):
     """### Converts HSL values to RGB
     #### Reference: https://en.wikipedia.org/wiki/HSL_and_HSV
 
@@ -278,8 +278,8 @@ def hsl_to_rgb(*HSL: int | float | tuple | list, depth: int = 8, output: str = "
                                     or float range 0-1 or a tuple/list with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of c0ffed
+        *     hexp returns a hex string color in the form of #dec1de
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
@@ -288,7 +288,7 @@ def hsl_to_rgb(*HSL: int | float | tuple | list, depth: int = 8, output: str = "
     #### N/B: Don't use round if the output color is going to be used to further conversion!
 
     ### Returns:
-        str | tuple[int, int, int] | tuple[float, float, float]: RGB
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     if depth % 1 != 0:
         raise ValueError("Depth value must be an integer number passed either as int or float")
@@ -344,7 +344,7 @@ def rgb_to_hsv(
     #### N/B: Don't use round output if the output color is going to be used to further conversion!
 
     Returns:
-        tuple: Hue, Saturation, Value
+        tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]: Hue, Saturation, Value
     """
     # Check color integrity
     R, G, B = ih.check_color(color, normalized=True, depth=depth)
@@ -385,8 +385,8 @@ def hsv_to_rgb(*HSV: int | float | tuple | list, depth: int = 8, output: str = "
             float range 0-1 or H in int range 0-359, SV in float range 0-1 or a tuple/list with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of c0ffee
+        *     hexp returns a hex string color in the form of #decaff
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
@@ -395,7 +395,7 @@ def hsv_to_rgb(*HSV: int | float | tuple | list, depth: int = 8, output: str = "
     #### N/B: Don't use round if the output color is going to be used to further conversion!
 
     ### Returns:
-        str | tuple[int, int, int] | tuple[float, float, float]: RGB
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     if depth % 1 != 0:
         raise ValueError("Depth value must be an integer number passed either as int or float")
@@ -449,7 +449,7 @@ def hsv_to_hsl(*HSV: int | float | tuple | list, output: str = "round"):
     #### N/B: Don't use round output if the output color is going to be used to further conversion!
 
     ### Returns:
-        tuple: Hue Saturation Lightness
+        tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]: Hue, Saturation, Lightness
     """
     # Check values integrity
     H, S, V = ih.check_hsw(HSV, output="normalized")
@@ -480,7 +480,7 @@ def hsl_to_hsv(*HSL: int | float | tuple | list, output: str = "round"):
     #### N/B: Don't use round output if the output color is going to be used to further conversion!
 
     Returns:
-        tuple: Hue Saturation Value
+        tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]: Hue, Saturation, Value
     """
     # Check values integrity
     H, S, L = ih.check_hsw(HSL, output="normalized")
@@ -499,7 +499,7 @@ def rgb_to_hsi(*color: int | float | str | tuple | list, depth: int = 8, output:
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float| str | tuple | list): String "add1c7", "#effec7", consecutive values either
+        `color` (int | float| str | tuple | list): String "dec0de", "#0ff1ce", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "normalized", "round" or "direct"
@@ -512,7 +512,7 @@ def rgb_to_hsi(*color: int | float | str | tuple | list, depth: int = 8, output:
     #### N/B: Don't use round output if the output color is going to be used to further conversion!
 
     Returns:
-        tuple: Hue, Saturation, Intensity
+        tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]: Hue, Saturation, Intensity
     """
     # Check color integrity
     R, G, B = ih.check_color(color, normalized=True, depth=depth)
@@ -547,7 +547,7 @@ def hsi_to_rgb(*HSI, depth: int = 8, output: str = "round"):
     #### N/B: Don't use round if the output color is going to be used to further conversion!
 
     ### Returns:
-        str | tuple[int, int, int] | tuple[float, float, float]: RGB
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     if depth % 1 != 0:
         raise ValueError("Depth value must be an integer number passed either as int or float")
@@ -580,7 +580,7 @@ def hsi_to_rgb(*HSI, depth: int = 8, output: str = "round"):
     return ih.return_rgb((R, G, B), normalized_input=True, depth=depth, output=output)
 
 
-def rgb_to_hsp(*color, depth: int = 8, output="round") -> tuple:
+def rgb_to_hsp(*color, depth: int = 8, output="round"):
     """### Takes an sRGB color and returns its HSP (Hue, Saturation, Perceived brightness) representation.
     #### This is not an actual color representation! The Hue and Saturation are being calculated the same  \
             way as in HSV. The perceived brightness is being calculated using the Weighted Euclidean Norm of the R, G, B
@@ -589,7 +589,7 @@ def rgb_to_hsp(*color, depth: int = 8, output="round") -> tuple:
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "add1c7", "#effec7", consecutive values either
+        `color` (int | float | str | tuple | list): String "c0ffed", "#dec1de", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "normalized", "half-normalized", "round" or "direct"
@@ -604,7 +604,7 @@ def rgb_to_hsp(*color, depth: int = 8, output="round") -> tuple:
     Reference: http://alienryderflex.com/hsp.html
 
     ### Returns:
-        tuple[int, int, int] | tuple[float, float, float]: (H, S, P)
+        tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]: Hue, Saturation, Perceived brightness
     """
     # Check color integrity
     R, G, B = ih.check_color(color, depth=depth, normalized=True)
@@ -624,7 +624,7 @@ def rgb_to_hsp(*color, depth: int = 8, output="round") -> tuple:
 
 
 def hsp_to_rgb(*HSP, depth: int = 8, output="round"):
-    """### Takes an HSP color and returns R, G, B values.
+    """### Takes an HSP color and returns RGB values.
 
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -634,8 +634,8 @@ def hsp_to_rgb(*HSP, depth: int = 8, output="round"):
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of c0ffee
+        *     hexp returns a hex string color in the form of #decaff
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
@@ -647,7 +647,7 @@ def hsp_to_rgb(*HSP, depth: int = 8, output="round"):
     ITU BT.601 / Rec. 601
 
     ### Returns:
-        tuple[int, int, int] | tuple[float, float, float]: (H, S, P)
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     if depth % 1 != 0:
         raise ValueError("Depth value must be an integer number passed either as int or float")
@@ -713,11 +713,11 @@ def rgb_to_xyz(
     illuminant: str = "D65",
     observer: int | float | str = "2",
     adaptation: str = "bradford",
-    output: str = "direct"):
+    output: str = "direct") -> tuple[int, int, int] | tuple[float, float, float]:
     """### Takes an 8-bit sRGB color and returns its XYZ values (where Y is Luminance)
 
     ### Args:
-        `color` (str | tuple | list): String "add1c7", "#effec7", consecutive values either
+        `color` (str | tuple | list): String "dec0de", "#0ff1ce", consecutive values either
                 in int range 0-255 or in float range 0-1 or a list/tuple (r, g, b) in same ranges
         `illuminant` (str): The illuminant for the output XYZ values. Defaults to "D65"
         `observer` (str | int | float): The observer angle for the illuminant of the XYZ values. Defaults to "2"
@@ -805,7 +805,8 @@ def rgb_to_xyz_alt(
     observer: str | int | int = "2",
     adaptation: str = "bradford",
     color_space: str = "sRGB",
-    output: str = "direct"):
+    output: str = "direct",
+    **kwargs) -> tuple[int, int, int] | tuple[float, float, float]:
     """### Takes an 8-bit sRGB color and returns its XYZ values (where Y is Luminance)
 
     #### This is an alternative way to convert from sRGB to XYZ color. The output of both methods \
@@ -813,7 +814,7 @@ def rgb_to_xyz_alt(
             input color is in sRGB space. This one allows for specifying a different input color space.
 
     ### Args:
-        `color` (str | tuple | list): String "add1c7", "#effec7", consecutive values either
+        `color` (str | tuple | list): String "decade", "#facade", consecutive values either
                 in int range 0-255 or in float range 0-1 or a list/tuple (r, g, b) in same ranges
         `illuminant` (str): The illuminant for the output XYZ values. Defaults to "D65"
         `observer` (str | int | float): The observer angle for the illuminant of the XYZ values. Defaults to "2"
@@ -824,6 +825,9 @@ def rgb_to_xyz_alt(
         * round returns a tuple(X, Y, Z) where the values are integers in range 0-100
         * direct returns a tuple(X, Y, Z) where the values are floats in range 0-100
         * In any invalid case the "direct" approach will be returned
+
+        `kwargs`: Additional arguments to pass to the transfer function of the given color space. Refer to
+            the transfer_functions module to get the needed arguments for the specific color space
 
     ### Illuminants | Lighting type:
 
@@ -876,7 +880,7 @@ def rgb_to_xyz_alt(
         illuminant=illuminant, observer=observer, color_space=color_space, adaptation=adaptation)
 
     # Convert to Linear RGB
-    R, G, B = cs[color_space]["transfer function"]((R, G, B), decode=True, output="normalized")
+    R, G, B = cs[color_space]["transfer function"]((R, G, B), decode=True, output="normalized", **kwargs)
 
     # Check if requested color space has an override matrix
     if override_matrix := cs[color_space].get("override_matrix") and illuminant == "D65":
@@ -903,7 +907,7 @@ def xyz_to_rgb(
     observer: str | int | float = "2",
     adaptation: str = "bradford",
     color_space: str = "sRGB",
-    output: str = "round") -> tuple:
+    output: str = "round"):
     """### Takes XYZ color and returns its sRGB values
 
     ### Args:
@@ -915,8 +919,8 @@ def xyz_to_rgb(
         `adaptation` (str): The adaptation method to be used for illuminant conversions. Defaults to "bradford"
         `color_space` (str, optional): The target color space in which the XYZ color will be converted. Defaults to sRGB.
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of c0ffed
+        *     hexp returns a hex string color in the form of #dec1de
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
@@ -964,7 +968,7 @@ def xyz_to_rgb(
     #### N/B: Don't use round if the output color is going to be used to further conversion!
 
     ### Returns:
-        str | tuple[int, int, int] | tuple[float, float, float]: RGB
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     # Refine arguments to be the correct type and form
     illuminant, observer, color_space, adaptation, _ = xyz.refine_args(
@@ -974,7 +978,8 @@ def xyz_to_rgb(
     X, Y, Z = ih.check_xyz(XYZ, normalized=True, big_float=big_float)
 
     # Check if requested color space has an override matrix
-    if override_matrix := cs[color_space].get("override_matrix") and illuminant == "D65":
+    override_matrix = cs[color_space].get("override_matrix")
+    if override_matrix and illuminant == "D65":
         matrix = override_matrix["to_rgb"]
     else:
         # Generate a conversion matrix if no override matrix exists
@@ -1010,8 +1015,8 @@ def xyz_to_rgb_alt(
         `observer` (int[2 | 10] | str, optional): The observer viewing angle - 2° (CIE 1931) or 10° (CIE 1964). Defaults to None (2).
         `adaptation` (str): The adaptation method to be used for illuminant conversions. Defaults to "bradford"
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of add1c7
+        *     hexp returns a hex string color in the form of #effec7
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
@@ -1082,7 +1087,7 @@ def xyz_to_rgb_alt(
     #### N/B: Don't use round if the output color is going to be used to further conversion!
 
     ### Returns:
-        str | tuple[int, int, int] | tuple[float, float, float]: RGB
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     # Refine arguments to be the correct type and form
     illuminant, observer, adaptation = xyz.refine_args(
@@ -1114,8 +1119,8 @@ def xyz_to_lab(
     lab_illuminant: str = "D65",
     observer: str | int | float = "2",
     adaptation: str = "bradford",
-    round_: bool = False):
-    """### Takes XYZ color and returns its L*ab values
+    round_: bool = False) -> tuple[int, int, int] | tuple[float, float, float]:
+    """### Takes XYZ color and returns its CIE L*ab values
 
     ### Args:
         `XYZ` (int, float, tuple, list): XYZ color in 3 consecutive int(0, 100), float(0, 100) or float(0, 1) or
@@ -1192,9 +1197,9 @@ def lab_to_xyz(
     xyz_illuminant="D65",
     observer="2",
     adaptation: str = "bradford",
-    output="direct"):
-    """### Converts L*ab color ato XYZ.
-    L* in range(0, 100), a in range(-128, 128)
+    output="direct") -> tuple[int, int, int] | tuple[float, float, float]:
+    """### Converts CIE L*ab color ato XYZ.
+    L* in range(0, 100), ab in range(-128, 128)
 
     ### Args:
         `LAB` (int, float, tuple, list): L*ab color in 3 consecutive int or float values in range
@@ -1254,7 +1259,10 @@ def lab_to_xyz(
             return X*100, Y*100, Z*100
 
 
-def xyz_to_yxy(*XYZ: int | float  | tuple | list, big_float: bool = True, output: str = "direct") -> tuple:
+def xyz_to_yxy(
+    *XYZ: int | float  | tuple | list,
+    big_float: bool = True,
+    output: str = "direct") -> tuple[int, int, int] | tuple[float, float, float]:
     """### Converts XYZ color to Yxy
 
     ### Args:
@@ -1285,7 +1293,10 @@ def xyz_to_yxy(*XYZ: int | float  | tuple | list, big_float: bool = True, output
             return Y*100, x*100, y*100
 
 
-def yxy_to_xyz(*Yxy: int | float | tuple | list, big_float: bool = True, output: str = "direct") -> tuple:
+def yxy_to_xyz(
+    *Yxy: int | float | tuple | list,
+    big_float: bool = True,
+    output: str = "direct") -> tuple[int, int, int] | tuple[float, float, float]:
     """### Converts Yxy color to XYZ
 
     ### Args:
@@ -1314,7 +1325,7 @@ def yxy_to_xyz(*Yxy: int | float | tuple | list, big_float: bool = True, output:
             return X*100, Y*100, Z*100
 
 
-def rgb_to_cmyk(*color: int| float | str | tuple | list, normalized: bool = False) -> tuple:
+def rgb_to_cmyk(*color: int| float | str | tuple | list, normalized: bool = False) -> tuple[int, int, int] | tuple[float, float, float]:
     """### Takes a color and returns its CMYK (Cyan, Magenta, Yellow, Key) representation
 
     #### This function only calculates the CMYK in D65 illuminant. The result doesn't match Photoshop's
@@ -1326,7 +1337,7 @@ def rgb_to_cmyk(*color: int| float | str | tuple | list, normalized: bool = Fals
         `normalized` (bool, optional): Returns the values in float range 0-1 instead of the default int range 0-100
 
     ### Returns:
-        tuple: CMYK
+        tuple[int, int, int] | tuple[float, float, float]: Cyan, Magenta, Yellow, Key
     """
     # Check color integrity
     R, G, B = ih.check_color(color, normalized=True)
@@ -1356,15 +1367,15 @@ def cmyk_to_rgb(*CMYK: int | float | tuple | list, output: str = "round"):
         `CMYK` (int | float | tuple | list): Consecutive values either int in range 0-100 or float in range 0-1 or
         a CMYK list/tuple(C, M, Y, K) with the same values.
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of dec0de
+        *     hexp returns a hex string color in the form of #0ff1ce
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
         *     In any invalid case the "direct" approach will be used
 
     ### Returns:
-        tuple: CMYK
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     # Check values integrity
     if len(CMYK) == 1:
@@ -1387,23 +1398,23 @@ def cmyk_to_rgb(*CMYK: int | float | tuple | list, output: str = "round"):
     return ih.return_rgb((R, G, B), normalized_input=True, output=output)
 
 
-def srgb_to_adobe_rgb(*color: int | float | str | tuple | list, output: str = "round") -> tuple | str:
+def srgb_to_adobe_rgb(*color: int | float | str | tuple | list, output: str = "round"):
     """### Takes an sRGB color and returns its Adobe RGB representation
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+        `color` (int | float | str | tuple | list): String "decade", "#facade", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `illuminant` (str, optional): The iluminant of the output Adobe R, G, B color. Defaults to 'D65'
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of c0ffed
+        *     hexp returns a hex string color in the form of #dec1de
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
         *     In any invalid case the "direct" approach will be used
 
     ### Returns:
-        tuple: R, G, B
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     # Check color integrity
     R, G, B = ih.check_color(color, normalized=True)
@@ -1426,24 +1437,22 @@ def srgb_to_adobe_rgb(*color: int | float | str | tuple | list, output: str = "r
     return ih.return_rgb((R, G, B), normalized_input=True, output=output)
 
 
-def adobe_rgb_to_srgb(
-    *color: int | float | str | tuple | list,
-    output: str = "hex")-> str | tuple :
+def adobe_rgb_to_srgb(*color: int | float | str | tuple | list, output: str = "hex"):
     """### Takes an Adobe RGB color and returns its sRGB representation
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+        `color` (int | float | str | tuple | list): String "add1c7", "#effec7", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
-        *     hex returns a hex string color in the form of decade
-        *     hexp returns a hex string color in the form of #facade
+        *     hex returns a hex string color in the form of c0ffee
+        *     hexp returns a hex string color in the form of #decaff
         *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
         *     round returns a tuple(R, G, B) where the values are integers in range 0-255
         *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
         *     In any invalid case the "direct" approach will be used
 
     ### Returns:
-        str | tuple: R, G, B
+        str | tuple[int, int, int] | tuple[float, float, float]: Red, Green, Blue
     """
     # Convert to X, Y, Z and then to sRGB
     X, Y, Z = adobe_rgb_to_xyz(*color, illuminant="D65", observer="2", adaptation="bradford", output="normalized")
@@ -1459,7 +1468,7 @@ def adobe_rgb_to_xyz(
     """### Takes an Adobe RGB color and returns its XYZ representation
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+        `color` (int | float | str | tuple | list): String "dec0de", "#0ff1ce", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `illuminant` (str, optional): The iluminant of the output XYZ color. Defaults to 'D65'
         `observer` (str | int | float): The observer angle for the illuminant of the XYZ values. Defaults to "2"

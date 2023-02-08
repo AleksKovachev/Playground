@@ -3,7 +3,7 @@
 from time import perf_counter
 from pprint import pprint
 
-from main import *
+from color_utilities import *
 import color_utilities.color_utils as cu
 import color_utilities.converters as co
 import color_utilities.internal_helpers as ih

@@ -57,7 +57,7 @@ def check_color(
     return (R / max_value, G / max_value, B / max_value) if normalized else (R, G, B)
 
 
-def check_hsw(vals: tuple | list, output: str = "round") -> tuple:
+def check_hsw(vals: tuple | list, output: str = "round") -> tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]:
     """### Checks if 3-element values HSW (W-wildcard, could be Lightness, Value, etc.) \
     have correct type of elements
 
@@ -193,7 +193,12 @@ def check_xyz(XYZ, normalized: bool = False, big_float: bool = True):
     return (X/100, Y/100, Z/100) if normalized else (X, Y, Z)
 
 
-def return_rgb(RGB: tuple | list, output: str, depth: int = 8, clamp: bool = True, normalized_input: bool = False):
+def return_rgb(
+    RGB: tuple | list,
+    output: str,
+    depth: int = 8,
+    clamp: bool = True,
+    normalized_input: bool = False) -> str | tuple[int, int, int] | tuple [float, float, float]:
     """### Determines what to return based on input parameters
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -233,10 +238,14 @@ def return_rgb(RGB: tuple | list, output: str, depth: int = 8, clamp: bool = Tru
         case "normalized":
             return (R, G, B) if normalized_input else (R / length, G / length, B / length)
         case _:
+            print("YYY")
             return (R * length, G * length, B * length) if normalized_input else (R, G, B)
 
 
-def return_hsw(HSW: tuple | list, output, normalized_input: bool = False):
+def return_hsw(
+    HSW: tuple | list,
+    output,
+    normalized_input: bool = False) -> tuple[int, int, int] | tuple[float, float, float] | tuple[int, float, float]:
     """### Determines what to return based on input parameters
 
     ### Args:
@@ -259,7 +268,12 @@ def return_hsw(HSW: tuple | list, output, normalized_input: bool = False):
             return (H * 360, S * 100, W * 100) if normalized_input else (H, S, W)
 
 
-def return_scale(vals: tuple | list, output, min_max: tuple | list = (0, 100), clamp: bool = False, normalized_input: bool = False):
+def return_scale(
+    vals: tuple | list,
+    output,
+    min_max: tuple | list = (0, 100),
+    clamp: bool = False,
+    normalized_input: bool = False) -> tuple[int, int, int] | tuple[float, float, float]:
     """### Determines what to return based on input parameters
 
     ### Args:

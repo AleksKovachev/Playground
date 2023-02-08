@@ -8,6 +8,7 @@ This module also contains information and constants NOT used in the package
 """
 from . import internal_helpers as ih
 from . import converters as co
+from . import color_spaces as cs
 
 # pylint: disable=invalid-name, unpacking-non-sequence, unsubscriptable-object
 
@@ -64,6 +65,16 @@ bit_values = """
 #? #FFFFFFFF0000000000000000
 """
 
+#= More info: http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html
+#= More info: https://en.wikipedia.org/wiki/CIELAB_color_space
+#= More info: http://www.russellcottrell.com/photo/matrixCalculator.htm
+#+ ϵ = 0.008856 # Actual CIE standard
+#+ ϵ = 216 / 24389 # Intent of the CIE standard
+#+ κ = 903.3 # Actual CIE standard
+#+ κ = 24389 / 27 # Intent of the CIE standard
+CIE_E = 216 / 24389 # 0.008856  # epsilon
+CIE_K = 24389 / 27 # 903.3  # kappa
+KODAK_E = 1/512 # 0.001953 # Actual Kodak standard
 
 # Reference: https://github.com/jsvine/spectra/blob/master/spectra/grapefruit.py
 ILLUMINANTS = {
@@ -981,6 +992,16 @@ def interpolate_hsl(color1, color2, factor=50, output: str = "hex"):
 
 
 def hsl2rgb(h,s,l):
+    """Converts HSL to RGB values
+
+    Args:
+        h (float): Hue in range 0-1
+        s (float): Saturation in range 0-1
+        l (float): Lightness in range 0-1
+
+    Returns:
+        tuple[float, float, float]: Red, Green, Blue
+    """
     a = s * min(l, 1 - l)
     def func_n(n):
         k = (n + h / 30) % 12
@@ -988,9 +1009,180 @@ def hsl2rgb(h,s,l):
     return func_n(0) * 255, func_n(8) * 255, func_n(4) * 255
 
 
-#!##### HEX WORDS #######
-# c0ffee, decaff
-# dec0de, 0ff1ce
-# decade, facade
-# c0ffed, dec1de
-# add1c7, effec7
+def convert_to_linear(RGB: tuple | list, color_space: str, normalized: bool = False) -> tuple:
+    """### Takes R, G, B values and converts them to Linear R, G, B values based on their color space
+
+    ### Args:
+        `RGB` (tuple | list): The R, G, B values to be converted
+        `color_space` (str): The color space that the R, G, B values are in
+        `normalized` (bool, optional): Returns the output in range 0-1 instead of 0-100
+
+    ### Returns:
+        tuple[R, G, B]
+    """
+    BETA = 0.018053968510807
+    ALPHA = 1 + 5.5 * BETA
+    if color_space == "SRGB":
+        R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in RGB)
+    elif color_space in {"REC. 709", "REC. 601"}:
+        R, G, B = (4.5 * i if i < 0.018 else 1.099 * i**0.45 - 0.099 for i in RGB)
+    elif color_space == "PROPHOTO":
+        R, G, B = (i ** 1.8 if i > 16 * (1/512) else i / 16 for i in RGB)
+    elif color_space == "REC 2020":
+        R, G, B = (i / 4.5 if abs(i) < BETA * 4.5 else ((abs(i) + ALPHA - 1) / ALPHA) ** 1 / 0.45 for i in RGB)
+    elif cs[color_space]["gamma"] == "L*":
+        R, G, B = (((i + 0.16) / 1.16) ** 3 if i < 0.08 else (100 * i) / CIE_K for i in RGB)
+    else:
+        R, G, B = (i **  cs[color_space]["gamma"] if i > 0 else 0 for i in RGB)
+
+    return (R, G, B) if normalized else (R * 100, G * 100, B * 100)
+
+
+def convert_linear_to(RGB, color_space) -> tuple:
+    """### Takes linear R, G, B values and applies gamma to them based on the desired color space
+
+    ### Args:
+        `RGB` (tuple | list): The R, G, B values to be converted
+        `color_space` (str): The color space that the R, G, B will be converted to
+
+    ### Returns:
+        tuple[R, G, B]
+    """
+    # Apply gamma
+    BETA = 0.018053968510807
+    ALPHA = 1 + 5.5 * BETA
+    if color_space == "SRGB":
+        R, G, B = (1.055 * (i ** (1 / 2.4)) - 0.055 if i > 0.0031308 else i * 12.92 for i in RGB)
+    elif color_space in {"REC. 709", "REC. 601"}:  # https://en.wikipedia.org/wiki/Rec._709
+        check = convert_to_linear((0.018, 0.018, 0.018), "REC. 709", True)[0]
+        R, G, B = (i / 4.5 if i < check else ((i + 0.099) / 1.099) ** (1/0.45) for i in RGB)
+    elif color_space == "PROPHOTO":
+        R, G, B = (i ** (1/1.8) if i > (1/512) else 16 * i for i in RGB)
+    elif color_space == "REC 2020":
+        R, G, B = (4.5 * i if i < BETA else ALPHA * i ** 0.45 - (ALPHA - 1) for i in RGB)
+    elif cs[color_space]["gamma"] == "L*":
+        R, G, B = (1.16 * i ** (1/3) if i > CIE_E else (i * CIE_K) / 100 for i in RGB)
+    else:
+        R, G, B = (i **  (1 / cs[color_space]["gamma"]) if i > 0 else 0 for i in RGB)
+
+    return R, G, B
+
+
+LIGHT_SOURCES = {
+    "CIE 1931 2 Degree Standard Observer": {
+        "Natural": (0.38158573, 0.35922414),
+        "Philips TL-84": (0.3784136, 0.37929025),
+        "SA": (0.44757303, 0.40743814),
+        "SC": (0.31005673, 0.3161457 ),
+        "T8 Luxline Plus White": (0.4104922, 0.38893253),
+        "T8 Polylux 3000": (0.43170608, 0.41387774),
+        "T8 Polylux 4000": (0.37921947, 0.38446909),
+        "Thorn Kolor-rite": (0.38191912, 0.37430926),
+        "Cool White FL": (0.36925632, 0.37254988),
+        "Daylight FL": (0.31266299,  0.33198569),
+        "HPS": (0.5216777, 0.41797118),
+        "Incandescent": (0.45073022, 0.40804613),
+        "LPS": (0.57515131, 0.42423223),
+        "Mercury": (0.39201846, 0.38377707),
+        "Metal Halide": (0.37254456, 0.38560393),
+        "Neodimium Incandescent": (0.4473987, 0.3950086),
+        "Super HPS": (0.47006166, 0.40611658),
+        "Triphosphor FL": (0.41316327, 0.39642205),
+        "3-LED-1 (457/540/605": (0.41705769, 0.39626246),
+        "3-LED-2 (473/545/616": (0.41706048, 0.39626812),
+        "3-LED-2 Yellow": (0.43656308, 0.44364962),
+        "3-LED-3 (465/546/614": (0.3804605, 0.376772 ),
+        "3-LED-4 (455/547/623": (0.41706794, 0.39627628),
+        "4-LED No Yellow": (0.41706059, 0.39626815),
+        "4-LED Yellow": (0.41706964, 0.39627677),
+        "4-LED-1 (461/526/576/624": (0.41706762, 0.39627506),
+        "4-LED-2 (447/512/573/627": (0.41707157, 0.39627875),
+        "Luxeon WW 2880": (0.45908853, 0.43291648),
+        "PHOS-1": (0.43644317, 0.40461603),
+        "PHOS-2": (0.45270446, 0.43758454),
+        "PHOS-3": (0.43689987, 0.40403737),
+        "PHOS-4": (0.43693602, 0.40411356),
+        "Phosphor LED YAG": (0.30776182, 0.32526894),
+        "60 A/W (Soft White": (0.45073022, 0.40804613),
+        "C100S54 (HPS": (0.52923152, 0.41137016),
+        "C100S54C (HPS": (0.50238041, 0.4158773 ),
+        "F32T8/TL830 (Triphosphor": (0.44325076, 0.4095237 ),
+        "F32T8/TL835 (Triphosphor": (0.40715027, 0.39317274),
+        "F32T8/TL841 (Triphosphor": (0.38537669, 0.39037076),
+        "F32T8/TL850 (Triphosphor": (0.34376891, 0.35844744),
+        "F32T8/TL865 /PLUS (Triphosphor": (0.31636888, 0.34532079),
+        "F34/CW/RS/EW (Cool White FL": (0.37725093, 0.39308766),
+        "F34T12/LW/RS /EW": (0.37886364, 0.39496063),
+        "F34T12WW/RS /EW (Warm White FL": (0.43846697, 0.40863544),
+        "F40/C50 (Broadband FL": (0.34583657, 0.36172445),
+        "F40/C75 (Broadband FL": (0.29996666, 0.31658217),
+        "F40/CWX (Broadband FL": (0.37503705, 0.36054395),
+        "F40/DX (Broadband FL": (0.31192231, 0.3428021 ),
+        "F40/DXTP (Delux FL": (0.31306654, 0.34222571),
+        "F40/N (Natural FL": (0.3768787, 0.35415346),
+        "H38HT-100 (Mercury": (0.31120059, 0.38294425),
+        "H38JA-100/DX (Mercury DX": (0.38979163, 0.37339469),
+        "MHC100/U/MP /3K": (0.42858177, 0.38816892),
+        "MHC100/U/MP /4K": (0.37314525, 0.37136699),
+        "SDW-T 100W/LV (Super HPS": (0.47233916, 0.40710633),
+        "Kinoton 75P": (0.31525241, 0.33287079)
+    },
+    "CIE 1964 10 Degree Standard Observer": {
+    "Natural": (0.38487099, 0.35386922),
+    "Philips TL-84": (0.383592, 0.37392274),
+    "SA": (0.4511768, 0.40593605),
+    "SC": (0.31038864, 0.31905065),
+    "T8 Luxline Plus White": (0.41694698, 0.38099143),
+    "T8 Polylux 3000": (0.43903893, 0.40455433),
+    "T8 Polylux 4000": (0.38511516, 0.37780093),
+    "Thorn Kolor-rite": (0.38553393, 0.37084049),
+    "Cool White FL": (0.37671505, 0.3645768 ),
+    "Daylight FL": (0.31739588, 0.33078082),
+    "HPS": (0.5317645, 0.40875272),
+    "Incandescent": (0.4543656, 0.40657368),
+    "LPS": (0.58996005, 0.41003995),
+    "Mercury": (0.40126641, 0.36473254),
+    "Metal Halide": (0.37878617, 0.37749693),
+    "Neodimium Incandescent": (0.44751672, 0.39673415),
+    "Super HPS": (0.47385957, 0.40138183),
+    "Triphosphor FL": (0.41859196, 0.38894771),
+    "3-LED-1 (457/540/605": (0.42509999, 0.38945135),
+    "3-LED-2 (473/545/616": (0.42222212, 0.4012985 ),
+    "3-LED-2 Yellow": (0.44622222, 0.44164646),
+    "3-LED-3 (465/546/614": (0.38747047, 0.37640472),
+    "3-LED-4 (455/547/623": (0.42286546, 0.38877224),
+    "4-LED No Yellow": (0.41980753, 0.39946529),
+    "4-LED Yellow": (0.4227206 ,  0.39028466),
+    "4-LED-1 (461/526/576/624": (0.42389978, 0.39417089),
+    "4-LED-2 (447/512/573/627": (0.42157104, 0.39408974),
+    "Luxeon WW 2880": (0.4666393, 0.43081742),
+    "PHOS-1": (0.44012, 0.40313578),
+    "PHOS-2": (0.4614874, 0.43615029),
+    "PHOS-3": (0.44089266, 0.40866226),
+    "PHOS-4": (0.44176044, 0.40726748),
+    "Phosphor LED YAG": (0.31280783, 0.33418094),
+    "60 A/W (Soft White": (0.4543656, 0.40657368),
+    "C100S54 (HPS": (0.53855461, 0.40257583),
+    "C100S54C (HPS": (0.50966306, 0.40906451),
+    "F32T8/TL830 (Triphosphor": (0.44879522, 0.40357464),
+    "F32T8/TL835 (Triphosphor": (0.41208253, 0.38800107),
+    "F32T8/TL841 (Triphosphor": (0.39090862, 0.38529056),
+    "F32T8/TL850 (Triphosphor": (0.34788243, 0.35584574),
+    "F32T8/TL865 /PLUS (Triphosphor": (0.3206982, 0.34387144),
+    "F34/CW/RS/EW (Cool White FL": (0.38651485, 0.38284333),
+    "F34T12/LW/RS /EW": (0.38962891, 0.38207472),
+    "F34T12WW/RS /EW (Warm White FL": (0.44839538, 0.39566664),
+    "F40/C50 (Broadband FL": (0.34988083, 0.36066132),
+    "F40/C75 (Broadband FL": (0.30198853, 0.31847903),
+    "F40/CWX (Broadband FL": (0.37850231, 0.35637189),
+    "F40/DX (Broadband FL": (0.31678304, 0.34174927),
+    "F40/DXTP (Delux FL": (0.31877475, 0.33979883),
+    "F40/N (Natural FL": (0.37883316, 0.3507244 ),
+    "H38HT-100 (Mercury": (0.32626063, 0.3600011 ),
+    "H38JA-100/DX (Mercury DX": (0.3970586, 0.35653243),
+    "MHC100/U/MP /3K": (0.43142299, 0.38064221),
+    "MHC100/U/MP /4K": (0.37570711, 0.36615647),
+    "SDW-T 100W/LV (Super HPS": (0.47646191, 0.40228801),
+    "Kinoton 75P": (0.31708664, 0.33622243)
+    }
+}

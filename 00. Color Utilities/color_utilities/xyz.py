@@ -16,17 +16,6 @@ from .color_spaces import color_spaces as cs
 # Make it so that every floating point number numpy returns is displayed to the 15th digit after the decimal point
 numpy.set_printoptions(formatter={'float': '{:0.15f}'.format}, suppress=True)
 
-#= More info: http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html
-#= More info: https://en.wikipedia.org/wiki/CIELAB_color_space
-#= More info: http://www.russellcottrell.com/photo/matrixCalculator.htm
-#+ ϵ = 0.008856 # Actual CIE standard
-#+ ϵ = 216 / 24389 # Intent of the CIE standard
-#+ κ = 903.3 # Actual CIE standard
-#+ κ = 24389 / 27 # Intent of the CIE standard
-CIE_E = 216 / 24389 # 0.008856  # epsilon
-CIE_K = 24389 / 27 # 903.3  # kappa
-KODAK_E = 1/512 # 0.001953 # Actual Kodak standard
-
 # http://brucelindbloom.com/index.html?Eqn_ChromAdapt.html
 # https://ninedegreesbelow.com/photography/srgb-color-space-to-profile.html
 # https://en.wikipedia.org/wiki/Illuminant_D65

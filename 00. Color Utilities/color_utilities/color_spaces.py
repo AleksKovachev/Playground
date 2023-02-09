@@ -3,7 +3,6 @@
 # More: https://en.wikipedia.org/wiki/RGB_color_spaces
 
 from functools import partial
-
 from . import transfer_functions as tf
 
 

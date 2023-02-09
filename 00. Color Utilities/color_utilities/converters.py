@@ -883,7 +883,8 @@ def rgb_to_xyz_alt(
     R, G, B = cs[color_space]["transfer function"]((R, G, B), decode=True, output="normalized", **kwargs)
 
     # Check if requested color space has an override matrix
-    if override_matrix := cs[color_space].get("override_matrix") and illuminant == "D65":
+    override_matrix = cs[color_space].get("override_matrix")
+    if override_matrix and illuminant == "D65":
         matrix = override_matrix["to_xyz"]
     else:
         # Generate a conversion matrix if no override matrix exists
@@ -1192,10 +1193,10 @@ def xyz_to_lab(
 
 
 def lab_to_xyz(
-    *LAB,
-    lab_illuminant="D65",
-    xyz_illuminant="D65",
-    observer="2",
+    *LAB: tuple | list,
+    lab_illuminant: str = "D65",
+    xyz_illuminant: str = "D65",
+    observer: int | float | str = "2",
     adaptation: str = "bradford",
     output="direct") -> tuple[int, int, int] | tuple[float, float, float]:
     """### Converts CIE L*ab color ato XYZ.
@@ -1218,6 +1219,8 @@ def lab_to_xyz(
             tuple[int, int, int] | tuple[float, float, float]: X, Y, Z in range 0-100 or 0-1
     """
     # Check values integrity
+    if isinstance(LAB, (tuple, list)) and len(LAB) == 1:
+        LAB = LAB[0]
     if not 0 <= LAB[0] <= 100:
         raise ValueError("L* must be in range(0, 100)")
     for var in (LAB[1], LAB[2]):

@@ -178,7 +178,6 @@ def check_xyz(XYZ, normalized: bool = False, big_float: bool = True):
         if not (0 <= X <= 95 and 0 <= Y <= 100 and 0 <= Z <= 109):
             raise ValueError("Integer types should be in the range 0-100")
     elif isinstance(X, float) and isinstance(Y, float) and isinstance(Z, float):
-        print([f"{i:.20f}" for i in XYZ])
         if big_float:
             if not (0 <= X <= 95.05 and 0 <= Y <= 100 and 0 <= Z <= 109):
                 raise ValueError("Color should be in the range 0-100")
@@ -238,7 +237,6 @@ def return_rgb(
         case "normalized":
             return (R, G, B) if normalized_input else (R / length, G / length, B / length)
         case _:
-            print("YYY")
             return (R * length, G * length, B * length) if normalized_input else (R, G, B)
 
 

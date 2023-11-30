@@ -43,31 +43,3 @@ There still are a few things that need to be done but it's playable as is. Enjoy
 
 This small app is intended to make you more fuocused on your work and have the appropriate amount of breaks so your brain stays fresh.
 As the name states, it's based on the Pomodoro Technique. You can find more about it here: https://en.wikipedia.org/wiki/Pomodoro_Technique
-
-## 5.Flash Cards
-
-This is a small Flash Cards application which aims at helping you learn new languages.
-
-## 6.US States Game
-
-A small game intended to halp you learn all the US States. Can easily be reworked for world's contries, capitals, cities, etc.
-
-## 7.Pong Game
-
-A simple Pong game created using the Turtle module. I guess we can't run away from the classics.
-
-## 8.Turtle Crossing Game
-
-When I was little I loved this kind of games. This crossing game is extremely simplified version created using the Turtle module.
-
-## 9.Quiz Game
-
-A simple random question console quiz game that tracks your score.
-
-## 10.Hangman Game
-
-Who doesn't like playing Hangman? This is a simple console version.
-
-## 11.Caesar Cipher
-
-A simple string coding app that shuffles the characters by a chosen amount.

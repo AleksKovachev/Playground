@@ -23,9 +23,9 @@ numpy.set_printoptions(formatter={'float': '{:0.15f}'.format}, suppress=True)
 #+ ϵ = 216 / 24389 # Intent of the CIE standard
 #+ κ = 903.3 # Actual CIE standard
 #+ κ = 24389 / 27 # Intent of the CIE standard
-CIE_E = 216 / 24389 # 0.008856  # epsilon
+CIE_E = 216 / 24389 # 0.008856  # epsilon # (6/29)**3
 CIE_K = 24389 / 27 # 903.3  # kappa
-KODAK_E = 1/512 # 0.001953 # Actual Kodak standard
+KODAK_E = 1 / 512 # 0.001953 # Actual Kodak standard
 
 # http://brucelindbloom.com/index.html?Eqn_ChromAdapt.html
 # https://ninedegreesbelow.com/photography/srgb-color-space-to-profile.html
@@ -303,8 +303,8 @@ def refine_args(
 
     # Check (and fix) the observer angle type
     if observer:
-        if not isinstance(observer, (str, int, float)) and observer is not None:
-            raise TypeError("Observer must be str | int | float type!")
+        if not isinstance(observer, (str, int, float)):
+            raise TypeError("Observer must be [str | int | float] type!")
         if isinstance(observer, (int, float)):
             observer = str(int(observer))
 
@@ -314,6 +314,8 @@ def refine_args(
     # Check adaptation input
     if adaptation:
         adaptation = adaptation.lower().strip()
+        if adaptation not in ADAPTATION_MATRICES:
+            raise ValueError(f"Adaptation methods can only be one of the following: {tuple(ADAPTATION_MATRICES)}")
 
     # Check color space input
     if color_space:
@@ -401,7 +403,7 @@ def working_space_matrix(
         A 3x3 conversion matrix in the form of a tuple
     """
 
-    # It target illuminant isn't specified, assume it's the color space's default illuminant
+    # If target illuminant isn't specified, assume it's the color space's default illuminant
     if not illuminant:
         illuminant = cs[color_space]["illuminant"]
 

@@ -1,15 +1,17 @@
 """A collection of useful functions for working with colors"""
 # pylint: disable=invalid-name, unpacking-non-sequence, unsubscriptable-object
 import random
+from enum import Enum
 from . import internal_helpers as ih
 from . import converters as co
+from .constants import Out1, Out2, Out3, Color
 
 
 def get_color_brightness(
     *color: int | float | str | tuple | list,
     depth: int = 8,
-    method: int = None,
-    output: str = "direct") -> int | float:
+    method: int = 0,
+    output: Enum = Out3.DIRECT) -> int | float:
     """### Get the brightness value of a color
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -46,26 +48,24 @@ def get_color_brightness(
         int | float: How bright the color is on the scale 0-100 | 0-1
     """
 
-    if method not in (None, *range(15)):
+    if method not in range(13):
         raise ValueError("Wrong method input!")
 
     # Display message if no method was given
     if not method:
-        msg='\n'.join(("Please choose a method (1-9):",
+        msg='\n'.join(("Please choose a method (1-12):",
         "1. The Maximum of the RGB Values (Value in HSV)",
         "2. The Average of the RGB Values (Intensity in HSI)",
         "3. The Average of the Smallest and Largest RGB Values (Lightness in HSL)",
         "4. Perceived brightness (P in HSP). Weighted Euclidean Norm of the [R, G, B] Vector",
-        "5. Perceived brightness. Weighted Euclidean Norm of the [R, G, B] Vector (Linearized)",
-        "6. Perceived brightness old (P in HSP in Darel Rex Finley's formula)",
-        "7. Perceived brightness old (Linearized)",
-        "8. Euclidean Norm of the [R, G, B] Vector",
-        "9. Geometric Mean of the R, G, B Components",
-        "10. Luma, Adobe",
-        "11. Luma, Rec709/sRGB (HDTV)",
-        "12. Luma, Rec2020 (UHDTV, HDR)"
-        "13. Luminance (Y) sRGB"
-        "14. Perceived Lightness (L*) from L*ab\n"))
+        "5. Perceived brightness old (P in HSP in Darel Rex Finley's formula)",
+        "6. Euclidean Norm of the [R, G, B] Vector",
+        "7. Geometric Mean of the R, G, B Components",
+        "8. Luma, Adobe",
+        "9. Luma, Rec709/sRGB (HDTV)",
+        "10. Luma, Rec2020 (UHDTV, HDR)"
+        "11. Luminance (Y) sRGB"
+        "12. Perceived Lightness (L*) from L*ab\n"))
         method = int(input(msg))
 
     # Check if the input color is valid
@@ -86,44 +86,35 @@ def get_color_brightness(
             brightness = sum((min((R, G, B)), max((R, G, B)))) / (2 * max_value)
         case 4: #= P (perceived brightness) from HSP. Weighted Euclidean Norm
             brightness = ((0.299 * (R / max_value) ** 2) + (0.587 * (G / max_value) ** 2) + (0.114 * (B / max_value) ** 2)) ** 0.5
-
-            #+ Alternative calculation. The one above is slightly faster.
-            # denominator = max_value * (0.299 + 0.587 + 0.114) ** 0.5
-            # brightness = (0.299 * R**2 + 0.587 * G**2 + 0.114 * B**2) ** 0.5 / denominator
-        case 5: #= P (perceived brightness) from HSP. Weighted Euclidean Norm (Linearized)
-            R, G, B = co.convert_to_linear((R / max_value, R / max_value, B / max_value), "SRGB", normalized=True)
-            brightness = ((0.299 * R ** 2) + (0.587 * G ** 2) + (0.114 * B ** 2)) ** 0.5
-        case 6: #= P (perceived brightness) from HSP old
-            brightness = ((0.241 * (R / max_value) ** 2) + (0.691 * (G / max_value) ** 2) + (0.068 * (B / max_value) ** 2)) ** 0.5
-        case 7: #= P (perceived brightness) from HSP old (Linearized)
-            R, G, B = co.convert_to_linear((R / max_value, R / max_value, B / max_value), "SRGB", normalized=True)
-            brightness = ((0.241 * R ** 2) + (0.691 * G ** 2) + (0.068 * B ** 2)) ** 0.5
-        case 8:
+        case 5: #= P (perceived brightness) from HSP old
+            brightness = ((0.241 * R ** 2) + (0.691 * G ** 2) + (0.068 * B ** 2)) ** 0.5 / max_value
+        case 6:
             denominator = max_value * (3 ** 0.5)
             brightness = (R**2 + G**2 + B**2) ** 0.5 / denominator
-        case 9:
+        case 7:
             brightness = ((R * G * B) ** (1/3)) / max_value
-        case 10: #= Luma, Adobe
+        case 8: #= Luma, Adobe
             brightness = ((0.2126 * R) + (0.7152 * G) + (0.0722 * B)) / max_value
-        case 11: #= Luma, Rec709/sRGB (HDTV)
+        case 9: #= Luma, Rec709/sRGB (HDTV)
             brightness = ((0.212 * R) + (0.701 * G) + (0.087 * B)) / max_value
-        case 12: #= Luma, Rec2020 (UHDTV. HDR)
+        case 10: #= Luma, Rec2020 (UHDTV. HDR)
             brightness = ((0.2627 * R) + (0.6780 * G) + (0.0593 * B)) / max_value
-        case 13: #= Luminocity
+        case 11: #= Luminocity
             # Apply gamma before doing calculations
+            # TODO: Use tf.srgb
             R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in (R/max_value, G/max_value, B/max_value))
             brightness = (0.2126 * R) + (0.7152 * G) + (0.0722 * B)
-        case 14: #= L* from L*ab
+        case 12: #= L* from L*ab
             # Apply gamma before doing calculations
+            # TODO: Use tf.srgb
             R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > 0.04045 else i / 12.92 for i in (R/max_value, G/max_value, B/max_value))
             Y = (0.2126 * R) + (0.7152 * G) + (0.0722 * B)
-            brightness = Y * (24389 / 27) if Y <= 216 / 24389 else Y ** (1 / 3) * 116 - 16
-            brightness /= 100
+            brightness = (Y * (24389 / 27) if Y <= 216 / 24389 else Y ** (1 / 3) * 116 - 16) /100
 
     return ih.return_hsw((brightness, brightness, brightness), normalized_input=True, output=output)[1]
 
 
-def get_median_color(*colors: int| float | str | tuple | list, depth: int = 8, output: str = "hex"):
+def get_median_color(*colors: Color, depth: int = 8, output: Enum = Out1.HEX):
     """### Calculates the average color between multiple RGB colors
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -177,7 +168,7 @@ def interpolate_color(
     color2: str | tuple | list,
     depth: int = 8,
     factor: int | float = 50,
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Creates a median color between color1 and color2 based on the factor
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -222,7 +213,7 @@ def get_gradient(
     depth: int = 8,
     steps: int = 4,
     include_inputs: bool = False,
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Calculates len(steps) number of equaly spaced RGB colors between color1 and color2
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -276,7 +267,7 @@ def get_gradient_alt(
     depth: int = 8,
     steps: int = 4,
     include_inputs: bool = False,
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Calculates len(steps) number of equaly spaced RGB colors between color1 and color2
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -318,7 +309,7 @@ def half_color(
     *color: int | float | str | tuple | list,
     depth: int = 8,
     operation: str = "darken",
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Takes a color and returns twise as bright/dark color
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -327,7 +318,7 @@ def half_color(
         `color` (int | float | str | tuple | list): String "dec0de", "#0ff1ce", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
-        `operation` (str, optional): Use either 'darken', "dark" or "dim" to get twice as dak color.
+        `operation` (str, optional): Use either 'darken', "dark" or "dim" to get twice as dark color.
                     Otherwise you get twice as bright color. Defaults to "darken"
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
         *     hex returns a hex string color in the form of decade
@@ -357,7 +348,7 @@ def half_color(
     return ih.return_rgb(new_color, depth=depth, output=output)
 
 
-def get_hue(*color: int | float | str | tuple | list, depth: int = 8, output: str = "direct") -> int | float:
+def get_hue(*color: Color, depth: int = 8, output: Enum = Out2.DIRECT) -> int | float:
     """### Takes a color and returns its Hue
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -366,7 +357,7 @@ def get_hue(*color: int | float | str | tuple | list, depth: int = 8, output: st
         `color` (int | float | str | tuple | list): String "add1c7", "#effec7", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
-        `output` (str, optional): Either "normalized", "round" or "direct"
+        `output` (str, optional): Either "normalized", "half-normalized", "round" or "direct"
         *     normalized returns a tuple(H, S, V) where the values are floats in range 0-1
         *     round returns a tuple(H, S, V) where the values are integers. H in range 0-359, SV in range 0-100
         *     direct returns a tuple(H, S, V) where the values are floats in range 0-100
@@ -403,7 +394,7 @@ def color_change(
     value: int = 5,
     operation: str = "darken",
     mode: str = "rgb",
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Takes an RGB color and brightens/darkens it based on the value and mode
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -464,7 +455,7 @@ def saturate(
     depth: int = 8,
     value: int = 5,
     mode: str = "hsv",
-    output: str = "round"):
+    output: Enum = Out1.ROUND):
     """### Get a more saturated version of given color.
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -504,7 +495,7 @@ def desaturate(
     depth: int = 8,
     value: int = 5,
     mode: str = "hsv",
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Get a more desaturated version of a given color.
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -538,13 +529,13 @@ def desaturate(
     return co.hsv_to_rgb(H, S, V, depth=depth, output=output)
 
 
-def complementary_color(*color: int | float | str | tuple | list, depth: int = 8, output: str = "hex"):
+def complementary_color(*color: Color, depth: int = 8, output: Enum = Out1.HEX):
     """### Create the complementary color of "color".
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "add1c7", "#effec7", consecutive values either
+        `color` (Color): String "add1c7", "#effec7", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
@@ -567,18 +558,18 @@ def complementary_color(*color: int | float | str | tuple | list, depth: int = 8
 
 
 def monochrome_scheme(
-    *color: int | float | str | tuple | list,
+    *color: Color,
     depth: int = 8,
     new_colors: int = 4,
     seed: int = None,
     mode: str = "hsl",
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Return len(new_colors) colors in the same hue with varying saturation/lightness.
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "decade", "#facade", consecutive values either
+        `color` (Color): String "decade", "#facade", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `new_colors` (int, optional): How many new colors to be generated. Defaults to 4.
@@ -598,7 +589,7 @@ def monochrome_scheme(
     """
 
     # Get the hue of the color
-    H = get_hue(*color, depth=depth, output="round")
+    H = get_hue(*color, depth=depth, output=Out2.ROUND)
 
     # Set the seed
     random.seed(seed)
@@ -632,13 +623,13 @@ def monochrome_scheme(
     return [ih.return_rgb(rgb_colors[i], depth=depth, output=output) for i in range(new_colors)]
 
 
-def monochrome_scheme_alt(*color: int | float | str | tuple | list, depth: int = 8, output: str = "hex"):
+def monochrome_scheme_alt(*color: Color, depth: int = 8, output: Enum = Out1.HEX):
     """### Return 4 colors with the same Hue and varying Saturation and Lightness.
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
 
     ### Args:
-        `color` (int | float | str | tuple | list): String "c0ffee", "#decaff", consecutive values either
+        `color` (Color): String "c0ffee", "#decaff", consecutive values either
                 int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
         `depth` (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
         `output` (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
@@ -668,7 +659,7 @@ def monochrome_scheme_alt(*color: int | float | str | tuple | list, depth: int =
         return x + plus if (x - _min) < thres else x - _min
 
     # Get the HSL values of the input color
-    HSL = co.rgb_to_hsl(*color, depth=depth, output="normalized")
+    HSL = co.rgb_to_hsl(*color, depth=depth, output=Out2.NORMALIZED)
 
     # Calculate the new Saturation and lightness values
     s1 = wrap(HSL[1], 0.3, 0.1, 0.3)
@@ -689,12 +680,98 @@ def monochrome_scheme_alt(*color: int | float | str | tuple | list, depth: int =
     return [ih.return_rgb([co.hsl_to_rgb(i, depth=depth) for i in res][j], output=output) for j in range(4)]
 
 
+def analogous_scheme(
+    *color,
+    depth: int = 8,
+    output_colors: int = 3,
+    seed: int = None,
+    min_max: tuple = (5, 100, 5, 100),
+    mode: str = "hsl",
+    output: Enum = Out1.HEX):
+    """Return len(new_colors) colors in the same hue with varying saturation/lightness.
+
+    Args:
+        color (Color): String "decade", "#facade", consecutive values either
+                int in range 0-255 or float in range 0-1 or an RGB list/tuple(R, G, B) with the same values
+        depth (int | float): The bit depth of the input RGB values. Defaults to 8-bit (range 0-255)
+        output_colors (int, optional): How many new colors to be expected (includin the input one). Defaults to 4.
+        seed (int, optional): Use if you want to get the same colors every time. Defaults to None (different).
+        min_max (tuple | list, optional): The minimum and maximum values for brightness and saturation respectively.
+        mode (str, optional): Either "hsl", "hsv" or "hsp" method for calculating. Defaults to "hsl".
+        output (str, optional): Either "hex", "hexp", "normalized", "round" or "direct"
+        *     hex returns a hex string color in the form of c0ffed
+        *     hexp returns a hex string color in the form of #dec1de
+        *     normalized returns a tuple(R, G, B) where the values are floats in range 0-1
+        *     round returns a tuple(R, G, B) where the values are integers in range 0-255
+        *     direct returns a tuple(R, G, B) where the values are floats in range 0-255
+        *     In any invalid case the "direct" approach will be used
+
+    Returns:
+        list: Returns list of colors in one of the following formats:
+        >>>   "add1c7" | "#AABBCC" | (173, 209, 199) | (0.9372549, 0.9960784, 0.7803921)
+    """
+    # Get the hue of the color
+    H = get_hue(*color, depth=depth, output=Out2.ROUND)
+    H1 = (H + 30) % 360
+    H2 = (H - 30) % 360
+
+    # Set the seed
+    random.seed(seed)
+    # Get values for the saturation and the lightness of the new colors
+    values_l = random.sample(range(min_max[0], min_max[1]), output_colors - 1)
+    values_s = random.sample(range(min_max[2], min_max[3]), output_colors - 1)
+
+    # If the saturation/lightness value is too low, give a chance for that value to be replaced
+    # If change_chance is higher than 3 - change the value to a higher one
+    for ind, val in enumerate(values_s):
+        change_chance = random.randint(0, 10)
+        if val < 30 and change_chance > 3:
+            values_s[ind] = random.randint(30, 100)
+
+    for ind, val in enumerate(values_l):
+        change_chance = random.randint(0, 10)
+        if val < 15 and change_chance > 3:
+            values_l[ind] = random.randint(15, 100)
+
+    # Pack the saturation and lightness values into pairs
+    values = tuple(zip(values_s, values_l))
+
+    # The number of colors to generate for each hue
+    hue_colors = output_colors // 3 - 1 if output_colors % 3 == 0 else output_colors // 3
+    hue1_colors = output_colors // 3 + 1 if output_colors % 3 == 2 else output_colors // 3
+    hue2_colors = output_colors // 3
+
+    # Use the hue and unpacked values to get the new RGB colors
+    mode = mode.strip().lower()
+    if mode == "hsv":
+        H_colors = [co.hsv_to_rgb(H, *values[i], depth=depth) for i in range(hue_colors)]
+        H1_colors = [co.hsv_to_rgb(H1, *values[i + hue_colors], depth=depth) for i in range(hue1_colors)]
+        H2_colors = [co.hsv_to_rgb(H2, *values[i + hue_colors + hue1_colors], depth=depth) for i in range(hue2_colors)]
+    elif mode == "hsp":
+        H_colors = [co.hsp_to_rgb(H, *values[i], depth=depth) for i in range(hue_colors)]
+        H1_colors = [co.hsp_to_rgb(H1, *values[i + hue_colors], depth=depth) for i in range(hue1_colors)]
+        H2_colors = [co.hsp_to_rgb(H2, *values[i + hue_colors + hue1_colors], depth=depth) for i in range(hue2_colors)]
+    elif mode == "hsi":
+        H_colors = [co.hsi_to_rgb(H, *values[i], depth=depth) for i in range(hue_colors)]
+        H1_colors = [co.hsi_to_rgb(H1, *values[i + hue_colors], depth=depth) for i in range(hue1_colors)]
+        H2_colors = [co.hsi_to_rgb(H2, *values[i + hue_colors + hue1_colors], depth=depth) for i in range(hue2_colors)]
+    else:
+        H_colors = [co.hsl_to_rgb(H, *values[i], depth=depth) for i in range(hue_colors)]
+        H1_colors = [co.hsl_to_rgb(H1, *values[i + hue_colors], depth=depth) for i in range(hue1_colors)]
+        H2_colors = [co.hsl_to_rgb(H2, *values[i + hue_colors + hue1_colors], depth=depth) for i in range(hue2_colors)]
+
+    rgb_colors =  H1_colors + H_colors + H2_colors
+    rgb_colors.insert(len(rgb_colors)//2, ih.check_color(color))
+
+    return [ih.return_rgb(color, depth=depth, output=output) for color in rgb_colors]
+
+
 def triadic_scheme(
     *color: int | float | str | tuple | list,
     depth: int = 8,
     angle: int = 120,
     complementary: bool = True,
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Return two colors forming a triad or a split complementary with the input color.
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
         If you want to use this function with a different depth the actual range is 0-(max value for bit depth).
@@ -734,7 +811,7 @@ def triadic_scheme(
     return [ih.return_rgb(i, depth=depth, output=output) for i in (co.hsl_to_rgb(i, S, L, depth=depth) for i in (h1, h2))]
 
 
-def tetradic_scheme(*color: int | float | str | tuple | list, depth: int = 8, angle: int = 30, output: str = "hex"):
+def tetradic_scheme(*color: int | float | str | tuple | list, depth: int = 8, angle: int = 30, output: Enum = Out1.HEX):
     """### Return three colors froming a tetrad with the input color. \
         Tetradic scheme is basically a double split complementary color scheme.
     #### N/B: All examples below are given for 8-bit color depth that has range 0-255. \
@@ -766,7 +843,7 @@ def convert_bit_depth(
     *color: int | float | str | tuple | list,
     base_depth: int | float,
     target_depth: int | float,
-    output: str = "hex"):
+    output: Enum = Out1.HEX):
     """### Converts a color to a different bit depth. Ex. 8-bit color in range 0-255 to 10-bit in range 0-1023
 
     Args:

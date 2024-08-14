@@ -6,13 +6,16 @@ These alternatives exist because the different references used for this package 
 
 This module also contains information and constants NOT used in the package
 """
+from enum import Enum
 from . import internal_helpers as ih
 from . import converters as co
 from . import color_spaces as cs
+from .constants import Out1, Out2
 
 # pylint: disable=invalid-name, unpacking-non-sequence, unsubscriptable-object
 
 #= Reading material and references
+# More info: https://www.ryanjuckett.com/rgb-color-space-conversion/
 # More info: https://blender.stackexchange.com/questions/173981/integrating-cg-imagery-with-footage-from-cameras-using-aces
 # More info: https://stackoverflow.com/questions/2612361/convert-rgb-values-to-equivalent-hsv-values-using-python
 # Luma: https://en.wikipedia.org/wiki/Luma_(video)
@@ -45,8 +48,8 @@ Rec2100Luma = '0.2627R + 0.678G + 0.0593B'
 # ( 0.0193, 0.1192, 0.9505))
 
 #! The numerical values below match those in the official sRGB specification,
-# which corrected small rounding errors in the original publication by sRGB's creators,
-# and assume the 2° standard colorimetric observer for CIE XYZ. #= This matrix depends on the bitdepth.
+# which corrected small rounding errors in the original publication by sRGB's creators, and assume
+# the 2° standard colorimetric observer for CIE XYZ. #= This matrix depends on the bitdepth.
 # ((3.2406, -1.5372, -0.4986),
 # (-0.9689,  1.8758,  0.0415),
 # ( 0.0557, -0.2040,  1.0570))
@@ -303,8 +306,9 @@ T6800K = ((1.2105, 0.2502, 0.1882), (0.4586, 0.8772, -0.1328), (0.0936, -0.2788,
 wp_4200K = (0.6337, 1.0000, 0.5267)
 wp_6800K = (0.4793, 1.0000, 0.7312)
 
-# This is a set of matrices for conversion to and from a given color space using its default illuminant
-# TO50 and FROM50 are matrices to convert to/from given color space in illuminant D50 without it being the default one
+# This is a set of matrices for conversion to and from a given color space using its
+# default illuminant TO50 and FROM50 are matrices to convert to/from given color space
+# in illuminant D50 without it being the default one
 COLOR_SPACE_MATRICES = {
     #! These are not included in the actual code because the working_space_matrix function in the xyz.py module generates these and more
     "TO": {
@@ -907,7 +911,7 @@ def darker_color(*color, level, mode: str = "hsv", normalized: bool = False):
     ### Returns:
         tuple[r, g, b]
     '''
-    normalized = "normalized" if normalized else "round"
+    normalized = Out1.NORMALIZED if normalized else Out1.ROUND
     R, G, B = ih.check_color(color)
     if mode.lower() == "hsl":
         H, S, L = co.rgb_to_hsl(R, G, B)
@@ -937,7 +941,7 @@ def brighter_color(*color, level, mode: str = "hsv", normalized: bool = False):
     ### Returns:
         tuple[r, g, b]
     '''
-    normalized = "normalized" if normalized else "round"
+    normalized = Out1.NORMALIZED if normalized else Out1.ROUND
     R, G, B = ih.check_color(color)
     if mode.lower() == "hsl":
         H, S, L = co.rgb_to_hsl(R, G, B)
@@ -949,7 +953,7 @@ def brighter_color(*color, level, mode: str = "hsv", normalized: bool = False):
     return co.hsv_to_rgb(H, S, V, output=normalized)
 
 
-def interpolate_hsl(color1, color2, factor=50, output: str = "hex"):
+def interpolate_hsl(color1, color2, factor=50, output: Enum = Out1.HEX):
     """### Creates a median color between color1 and color2 based on the factor using HSL
 
     ### Args:
@@ -972,8 +976,8 @@ def interpolate_hsl(color1, color2, factor=50, output: str = "hex"):
         >>>   "AABBCC" | "#AABBCC" | (170, 187, 204) | (0.66, 0.73, 0.8)
     """
     factor /= 100
-    color1 = list(co.rgb_to_hsl(color1, output="normalized"))
-    color2 = co.rgb_to_hsl(color2, output="normalized")
+    color1 = list(co.rgb_to_hsl(color1, output=Out2.NORMALIZED))
+    color2 = co.rgb_to_hsl(color2, output=Out2.NORMALIZED)
     for i in range(3):
         color1[i] += factor * (color2[i] - color1[i])
 

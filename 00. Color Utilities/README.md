@@ -13,13 +13,13 @@ If you spot any issues, please don't hesitate to contact me.
 Install it if you want to be able to view all comments color coded and use the settings at the bottom of this file.
 
 
+# This markdown file is not up-to-date with the latest version of the library!!!
+
 ## ***Contents***
 
 
 ### **tester**
-As the name suggests, this file has some preconditions for testing the functions. It's also underdeveloped since
-it's not important for the final code. It only exists for dynamic testing while developing and until the unit tests are ready.
-
+This file contains some unit tests. Not all tests are written yet, it's a work-in-progress.
 
 ### ***color_utilities folder***
 
@@ -316,80 +316,3 @@ This module contains data for Alexa Log C curve conversion
 
 ### ***Better comments extension settings***:
 Paste these in VSCode's settings.json file andter installing the extension and restart so the changes can take effect.
-
-```
-"better-comments.tags": [
-    {
-    "tag": "!",
-    "color": "#FF2D00",
-    "strikethrough": false,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": false,
-    "italic": false
-    },
-    {
-    "tag": "?",
-    "color": "#3498DB",
-    "strikethrough": false,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": false,
-    "italic": false
-    },
-    {
-    "tag": "//",
-    "color": "#474747",
-    "strikethrough": true,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": false,
-    "italic": false
-    },
-    {
-    "tag": "todo",
-    "color": "#FF8C00",
-    "strikethrough": false,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": false,
-    "italic": false
-    },
-    {
-    "tag": "*",
-    "color": "#98C379",
-    "strikethrough": false,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": false,
-    "italic": false
-    },
-    {
-    "tag": "=",
-    "color": "#FF6624",
-    "strikethrough": false,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": false,
-    "italic": false
-    },
-    {
-    "tag": "+",
-    "color": "#F8FF24",
-    "strikethrough": false,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": false,
-    "italic": false
-    },
-    {
-    "tag": "~",
-    "color": "#cc39e5",
-    "strikethrough": false,
-    "underline": false,
-    "backgroundColor": "transparent",
-    "bold": true,
-    "italic": false
-    }
-]
-```

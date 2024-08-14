@@ -4,19 +4,20 @@ This password manager application was based on the one from lesson #29 and #30 o
 It was severely changed and expanded and has now become a fully featured application with data encryption and lots of options.
 It supports 2 languages (Bulgarian and English) by default but more can easily be added. The UI was created using Tkinter.
 
-IMPORTANT!!!
+## IMPORTANT NOTES
 
-The data encryption in this version is reduced to nothing since I don't want to share the actual encryption techniques publicly.
+* The data encryption in this version is reduced to nothing since I don't want to share the actual encryption techniques publicly.
+* The application is still in development and has some unfinished code
 
-Instructions:
+## Instructions:
 
 Run from the main directory -> main.py file
 
-Prerequisites:
+## Prerequisites:
 
 Install cryptography package. pip install cryptography
 
-Screenshots:
+## Screenshots:
 
 01. Login window:
 

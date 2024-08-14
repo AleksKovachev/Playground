@@ -1,12 +1,15 @@
 """This module contains transfer functions for various color spaces"""
 # pylint: disable=invalid-name, unsubscriptable-object, unused-argument
+from enum import Enum
 from math import log, log2, log10, log1p, copysign, exp, e
 
 from . import internal_helpers as ih
 from . import alexa_transfer_function_helpers as atfh
+from .constants import Out1
 
 
-def srgb(RGB: tuple | list, depth: int = 8, decode: bool = False, output="direct", **kwargs):
+def srgb(
+    RGB: tuple | list, depth: int = 8, decode: bool = False, output: Enum = Out1.DIRECT, **kwargs):
     """### Converts between Linear and Gamma-corrected sRGB values. \
         This is the sRGB electro-optical transfer function (EOTF) and its inverse
 
@@ -29,7 +32,7 @@ def srgb(RGB: tuple | list, depth: int = 8, decode: bool = False, output="direct
     """
     RGB = ih.check_color(RGB, depth=depth, normalized=True)
     if decode:  # Linearize EOTF
-        check = srgb((0.0031308, 0.0031308, 0.0031308), output="normalized")[0]    # ~0.04045
+        check = srgb((0.0031308, 0.0031308, 0.0031308), output=Out1.NORMALIZED)[0]    # ~0.04045
         R, G, B = (((i + 0.055) / 1.055) ** 2.4 if i > check else i / 12.92 for i in RGB)
         return ih.return_rgb((R, G, B), normalized_input=True, output=output)
     # EOTF Inverse
@@ -37,7 +40,7 @@ def srgb(RGB: tuple | list, depth: int = 8, decode: bool = False, output="direct
     return ih.return_scale((R, G, B), normalized_input=True, output=output)
 
 
-def rec601(RGB: tuple | list, decode: bool = False, output="normalized", **kwargs) -> str | tuple:
+def rec601(RGB: tuple | list, decode: bool = False, output: Enum = Out1.NORMALIZED, **kwargs) -> str | tuple:
     """### Converts between Linear and Gamma-corrected Rec. 601 / Rec.709 values \
         This is the Rec. 601 / Rec. 709 opto-electronic transfer function (OETF) and its inverse
 
@@ -72,7 +75,8 @@ def rec601(RGB: tuple | list, decode: bool = False, output="normalized", **kwarg
     return ih.return_rgb((R, G, B), normalized_input=True, clamp=0, output=output)
 
 
-def rec2020(RGB: tuple | list, decode: bool = False, depth: int = 10, output="normalized", **kwargs) -> str | tuple:
+def rec2020(
+    RGB: tuple | list, decode: bool = False, depth: int = 10, output: Enum = Out1.NORMALIZED, **kwargs) -> str | tuple:
     """### Converts between Linear and Gamma-corrected Rec.2020 values \
         This is the Rec. 2020 opto-electronic transfer function (OETF) and its inverse
 
@@ -114,7 +118,7 @@ def rec2020(RGB: tuple | list, decode: bool = False, depth: int = 10, output="no
     return ih.return_rgb(RGB, normalized_input=True, clamp=0, output=output)
 
 
-def romm(RGB: tuple | list, decode: bool = False, depth: int = 8, output="normalized", **kwargs):
+def romm(RGB: tuple | list, decode: bool = False, depth: int = 8, output: Enum = Out1.NORMALIZED, **kwargs):
     """### Converts between Linear and Gamma-corrected ROMM (ProPhoto) values \
         This is the ROMM color component transfer function (CCTF).
 
@@ -147,7 +151,7 @@ def romm(RGB: tuple | list, decode: bool = False, depth: int = 8, output="normal
     return ih.return_rgb((R, G, B), depth=depth, normalized_input=True, clamp=0, output=output)
 
 
-def eci(RGB: tuple | list, decode: bool = False, depth: int = 8, output="normalized", **kwargs):
+def eci(RGB: tuple | list, decode: bool = False, depth: int = 8, output: Enum = Out1.NORMALIZED, **kwargs):
     """### Converts between Linear and Gamma-corrected ROMM (ProPhoto) values \
         This is the ROMM color component transfer function (CCTF).
 
@@ -186,7 +190,7 @@ def eci(RGB: tuple | list, decode: bool = False, depth: int = 8, output="normali
     return ih.return_rgb((R, G, B), depth=depth, normalized_input=True, clamp=0, output=output)
 
 
-def rimm(RGB: tuple | list, decode: bool = False, exposure: int = 2, depth: int = 8, output="normalized", **kwargs):
+def rimm(RGB: tuple | list, decode: bool = False, exposure: int = 2, depth: int = 8, output: Enum = Out1.NORMALIZED, **kwargs):
     """### Converts between Linear and Gamma-corrected RIMM values \
         This is the RIMM color component transfer function (CCTF).
 
@@ -222,7 +226,14 @@ def rimm(RGB: tuple | list, decode: bool = False, exposure: int = 2, depth: int 
     return ih.return_rgb(out, depth=depth, normalized_input=True, clamp=0, output=output)
 
 
-def erimm(RGB: tuple | list, decode: bool = False, exp_min: float = 0.001, exp_max: float = 316.2, depth: int = 8, output="normalized", **kwargs):
+def erimm(
+    RGB: tuple | list,
+    decode: bool = False,
+    exp_min: float = 0.001,
+    exp_max: float = 316.2,
+    depth: int = 8,
+    output: Enum = Out1.NORMALIZED,
+    **kwargs):
     """### Converts between Linear and Gamma-corrected ERIMM values \
         This is the ERIMM opto-electronic/electro-optical transfer function (OETF).
 
@@ -268,7 +279,7 @@ def erimm(RGB: tuple | list, decode: bool = False, exp_min: float = 0.001, exp_m
     exp_max = log(exp_max)
 
     if decode:  # Linearize / Decoding OETF
-        check = ((lg - exp_min) / (exp_max - exp_min))
+        check = (lg - exp_min) / (exp_max - exp_min)
         RGB = (exp(i * (exp_max - exp_min) + exp_min) if i > check else
                ((exp_max - exp_min) / (lg - exp_min)) * (i * euler_min) for i in RGB)
         return ih.return_rgb(RGB, depth=depth, normalized_input=True, clamp=0, output=output)
@@ -925,7 +936,8 @@ def smpte240m(RGB: tuple | list, decode: bool = False, **kwargs):
     return [4 * i if i < 0.0228 else 1.1115 * i** 0.45 - 0.1115 for i in RGB]
 
 
-def gamma_function(RGB: tuple | list, gamma: int | float, decode: bool = False, depth: int = 8,  output: str = "normalized"):
+def gamma_function(
+    RGB: tuple | list, gamma: int | float, decode: bool = False, depth: int = 8,  output: Enum = Out1.NORMALIZED):
     """### Converts between Linear and Gamma-corrected RGB values. \
         This is a typical gamma encoding/decoding function
 

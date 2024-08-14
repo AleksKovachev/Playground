@@ -1,0 +1,285 @@
+{
+    "login": {
+        "auth_title": "Login",
+        "auth_text": "Enter your credentials to continue:",
+        "signin": "Sign-in",
+        "signup": "Sign-up",
+        "log_entry_pass": "Password"
+    },
+    "manage_data_integrity":{
+        "message": "Corrupted data file detected!",
+        "explain": "* Press Continue to try to run Password Manager with the same data file as before (Recommanded)\n* Press Use last backup to use the latest backup file you have on your system\n* Press Open data file to select a data file from your drive",
+        "continue_btn": "Continue",
+        "use_last_data_btn": "Use last backup",
+        "choose_data_btn": "Open a data file"
+    },
+    "status_bar": {
+        "entries_num": [
+            "Hello",
+            "You currently have",
+            "accounts! | Your last backup is from:"
+        ],
+        "autoclose": "Autoclose in:",
+        "autoclose_deactivated": "Autoclose DEACTIVATED"
+    },
+    "messages": {
+        "empty_creds": {
+            "title": "Empty Fields",
+            "text": "You need to enter a username and a password!"
+        },
+        "wrong_pass": {
+            "title": "Wrong Password",
+            "text": "You've entered a wrong password! Please try again!"
+        },
+        "wrong_user": {
+            "title": "No such user",
+            "text": [
+                "The username",
+                "was not found!"
+            ]
+        },
+        "long_pass": {
+            "title": "Wrong Password",
+            "text": "The password is too long!"
+        },
+        "short_pass": {
+            "title": "Wrong Password",
+            "text": "The password is too short!"
+        },
+        "check_pwd_rep": {
+            "title": "Mismatch",
+            "text": "The passwords don't match!"
+        },
+        "recover_from_backup": {
+            "title": "WARNING!",
+            "text": "Are you sure you want to recover this file?\nThis will delete all of the current data you have!"
+        },
+        "apply_changes": {
+            "title": "WARNING!",
+            "text": "Are you sure you want to apply changes?"
+        },
+        "no_new_data": {
+            "title": "No New Data",
+            "text": "There's nothing new to apply!"
+        },
+        "login_removed": {
+            "title": "Login Username Removed!",
+            "text": "You can't remove the login username!\nAssigning back the current one..."
+        },
+        "special_first_char": {
+            "title": "Invalid e-mail",
+            "text": "The e-mail can't begin or end with a special character!"
+        },
+        "invalid_email": {
+            "title": "Invalid e-mail",
+            "text": "The e-mail you entered is not valid!"
+        },
+        "invalid_size": {
+            "title": "Incorrect username",
+            "text": "The username should be between 3 and 20 characters!"
+        },
+        "invalid_chars": {
+            "title": "Invalid characters",
+            "text": "The username and password should only contain characters in the range:\na-z, A-Z, 0-9"
+        },        
+        "duplicate_user": {
+            "title": "Duplicate username",
+            "text": [
+                "Username",
+                "is already taken!"
+            ]
+        },
+        "empty_password" : {
+            "title": "ERROR!",
+            "text": "You can't change your password without first providing the old one!"
+        },
+        "wrong_old_pass" : {
+            "title": "ERROR!",
+            "text": "The old password is incorrect!"
+        },
+        "pass_no_match" : {
+            "title": "ERROR!",
+            "text": "The new password doesn't match!"
+        },
+        "replace_backup": {
+            "title": "Replace?",
+            "text": [
+                "The latest backup is from: ",
+                "!\nDo you wat to replace all data with this backup?"
+            ]
+        },
+        "no_backkups": {
+            "title": "No backups!",
+            "text": "No backup files were found!"
+        },
+        "no_website": {
+            "title": "No website",
+            "text": "You have to Enter a website or platform!"
+        },
+        "display_creds": {
+            "title": "Credentials for",
+            "text": [
+                "User:",
+                "E-mail:",
+                "Password:"
+            ]
+        },
+        "browse_acc": {
+            "title": "Missing credentials",
+            "text": "Couldn't find the credentials you're looking for.\nDo you want to open a list of all accounts?"
+        },
+        "fill_fields": {
+            "title": "Ooops",
+            "text": "You must fill all fields!"
+        },
+        "file_not_found": {
+            "title": "File Not Found!",
+            "text": "The file you're trying to open was not found!"
+        },
+        "wrong_json_format": {
+            "title": "File Broken!",
+            "text": "The file you're trying to open is broken!"
+        },
+        "different_db_structure": {
+            "title": "Different database structure!",
+            "text": "WARNING! The database structure of the imported file is different that the current database structure! Do you want to copy all common data?"
+        },
+        "overwrite": {
+            "title": "Overwrite?",
+            "text": [
+                "You already have credentials for",
+                "Do you want to overwrite them?"
+            ]
+        },
+        "creds_correct": [
+            "These are the entered details:\n\nEmail:",
+            "User:",
+            "Password:",
+            "Are these correct?"
+        ]
+    },
+    "signup": {
+        "title": "Registration",
+        "reg_text": "Please fill out all the fields:",
+        "e_btn": "Create",
+        "entrance_email": "E-mail",
+        "entrance_pass": "Password",
+        "repeat_pass": "Repeat Password"
+    },
+    "field_clear": {
+        "password": "Password",
+        "user": "Username",
+        "email": "E-mail",
+        "repeat_password": "Repeat Password"
+    },
+    "main_title": "Password Manager",
+    "main_menu": {
+        "copy": "Copy",
+        "paste": "Paste",
+        "cut": "Cut",
+        "backup_label_date": "Date",
+        "file": "File",
+        "edit": "Edit",
+        "settings": "Settings",
+        "themes": "Themes & Colors",
+        "backup_period": "Backup period",
+        "settings_menu": "Settings..."
+    },
+    "main_labels": {
+        "website": "Website:",
+        "user": "Username:",
+        "email": "Email:",
+        "password": "Password:",
+        "password_length": "Length:",
+        "status_entries": "Hello!"
+    },
+    "main_buttons": {
+        "search": "Search",
+        "options": "Options",
+        "generate": "Generate",
+        "add": "Add",
+        "clear": "Clear All"
+    },
+    "main_radiobuttons": {
+        "radio1": "Secure",
+        "radio2": "Easy",
+        "radio3": "Combo",
+        "radio4": "Secure Combo"
+    },
+    "theme_changer": {
+        "title": "Customize Theme",
+        "bg_label": "Background:",
+        "fg_label": "Foreground:",
+        "accent_label": "Accents:",
+        "details1_label": "Details 1:",
+        "details2_label": "Details 2:",
+        "reset_btn": "Reset",
+        "element_color": "Choose a color"
+    },
+    "customize": {
+        "left_panel": {
+            "login_btn": "Login Settings⏵",
+            "default_btn": "Default Settings"
+        },
+        "right_panel_login": {
+            "user": "Username:",
+            "password": "Password ---▼",
+            "old_pwd": "Old:",
+            "new_pwd": "New:",
+            "rep_pwd": "Repeat:"
+        },
+        "right_panel_default": {
+            "user": "Username:",
+            "email": "E-mail:",
+            "autoclose": "Autoclose",
+            "mins": "Minutes",
+            "tip": "(0 means no Autoclose)"
+        },
+        "apply_btn": "Apply",
+        "update_right_panel": {
+            "login": {
+                "login_btn": "Login Settings⏵",
+                "default_btn": "Default Settings"
+            },
+            "default": {
+                "login_btn": "Login Settings",
+                "default_btn": "Default Settings⏵"
+            }
+        }
+    },
+    "import_data": {
+        "askopenfile_title": "Select a File",
+        "message": "You already have a data file!",
+        "question": "What do you want to do?",
+        "new_data_btn": "Use new data",
+        "merge_data_btn": "Merge data",
+        "old_data_btn": "Use old data"
+    },
+    "merge_dominant": {
+        "msg": "In case of data conflict do you want to keep the current information or the one from the imported file?",
+        "old_btn": "Current",
+        "new_btn": "Imported"
+    },
+    "export_data_title": "Choose a Folder",
+    "backup_period": [
+        "No backups",
+        "Daily",
+        "Weekly",
+        "Monthly",
+        "On close"
+    ],
+    "win2": {
+        "title": "Account List:",
+        "choose_acc": "Choose a website:"
+    },
+    "light_theme": "Light",
+    "dark_theme": "Dark",
+    "custom_theme": "Custom...",
+    "button1": "Browse Data...",
+    "button2": "Import Data",
+    "button3": "Export Data",
+    "button4": "Recover from backup",
+    "button5": "Logout",
+    "button6": "Exit",
+    "keep_language": "Keep language on restart"
+}
